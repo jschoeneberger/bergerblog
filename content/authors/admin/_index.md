@@ -14,7 +14,7 @@ education:
 email: jasonschoeneberger@gmail.com
 highlight_name: true
 interests:
-- Statistical inference
+- Education Research & Measurement
 - Randomized Controlled Trials
 - Regression Discontinuity Designs
 organizations:
