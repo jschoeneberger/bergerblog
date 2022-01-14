@@ -1,5 +1,5 @@
 # Activate this widget? true/false
-active: false
+active:false
 
 ---
 # An instance of the Accomplishments widget.
