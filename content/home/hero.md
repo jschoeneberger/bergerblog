@@ -1,3 +1,4 @@
+active: false
 ---
 widget: hero
 headless: true

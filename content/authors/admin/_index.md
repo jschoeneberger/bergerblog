@@ -1,27 +1,26 @@
 ---
-bio: My research interests include distributed robotics, mobile computing and programmable
-  matter.
+bio: My research interests include statistical programming and data management, educational research, measurerment and evaluation.
 education:
   courses:
-  - course: PhD in Artificial Intelligence
-    institution: Stanford University
+  - course: PhD in Educational Psychology-Research
+    institution: University of South Carolina
     year: 2012
-  - course: MEng in Artificial Intelligence
-    institution: Massachusetts Institute of Technology
-    year: 2009
-  - course: BSc in Artificial Intelligence
-    institution: Massachusetts Institute of Technology
-    year: 2008
-email: ""
+  - course: MS in Psychology
+    institution: Shippensburg University
+    year: 1999
+  - course: BA in Psychology
+    institution: Shippensburg University
+    year: 1997
+email: jasonschoeneberger@gmail.com
 highlight_name: true
 interests:
-- Artificial Intelligence
-- Computational Linguistics
-- Information Retrieval
+- Statistical inference
+- Randomized Controlled Trials
+- Regression Discontinuity Designs
 organizations:
-- name: Stanford University
-  url: https://www.stanford.edu/
-role: Professor of Artificial Intelligence
+- name: ICF
+  url: https://www.https://www.icf.com//
+role: Senior Researcher
 social:
 - icon: envelope
   icon_pack: fas
@@ -31,22 +30,18 @@ social:
   icon: twitter
   icon_pack: fab
   label: Follow me on Twitter
-  link: https://twitter.com/GeorgeCushen
+  link: https://twitter.com/jasonsberger
 - icon: graduation-cap
   icon_pack: fas
-  link: https://scholar.google.co.uk/citations?user=sIwtMXoAAAAJ
+  link: https://scholar.google.com/citations?user=RIRA8UkAAAAJ&hl=en
 - icon: github
   icon_pack: fab
-  link: https://github.com/gcushen
+  link: https://github.com/jschoeneberger
 - icon: linkedin
   icon_pack: fab
-  link: https://www.linkedin.com/
+  link: https://www.linkedin.com/in/jasonaschoeneberger/
 superuser: true
-title: Alice Bighetti (吳恩達)
+title: Jason A. Schoeneberger
 ---
 
-Alice Bighetti is a professor of artificial intelligence at the Stanford AI Lab. Her research interests include distributed robotics, mobile computing and programmable matter. She leads the Robotic Neurobiology group, which develops self-reconfiguring robots, systems of self-organizing robots, and mobile sensor networks.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.
-
-{{< icon name="download" pack="fas" >}} Download my {{< staticref "uploads/resume.pdf" "newtab" >}}resumé{{< /staticref >}}.
+I am a Senior Researcher at ICF, engaging primarily in education and social research and evaluation work. I have worked in the accountability domain in several large, urban school districts including Charlotte-Mecklenburg Schools, the School District of Philadelphia and Broward County Public Schools. My interests include statistical programming, statistical modeling, and the use of applied research and evaluation methods for informing policy and practice. 
