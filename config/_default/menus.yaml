@@ -9,4 +9,4 @@ main:
     weight: 10
   - name: Contact
     url: '#contact'
-    weight: 70
+    weight: 20
