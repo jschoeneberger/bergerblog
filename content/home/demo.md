@@ -1,11 +1,10 @@
-active: false
 ---
 # An instance of the Blank widget.
 # Documentation: https://wowchemy.com/docs/getting-started/page-builder/
 widget: blank
 
 # Activate this widget? true/false
-#active: true
+active: false
 
 # This file represents a page section.
 headless: true
