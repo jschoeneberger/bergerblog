@@ -1,6 +1,6 @@
 ---
 # Activate this widget? true/false
-active: false
+active: tru
 
 # An instance of the Pages widget.
 # Documentation: https://wowchemy.com/docs/page-builder/
