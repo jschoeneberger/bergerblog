@@ -19,7 +19,7 @@ interests:
 - Applied Evaluation Methods
 organizations:
 - name: ICF
-  url: https://www.https://www.icf.com//
+  url: https://www.icf.com//
 role: Senior Researcher
 social:
 - icon: envelope
@@ -44,4 +44,4 @@ superuser: true
 title: Jason A. Schoeneberger
 ---
 
-I am a Senior Researcher at ICF, engaging primarily in education and social research and evaluation work. I have worked in the accountability domain in several large, urban school districts including Charlotte-Mecklenburg Schools, the School District of Philadelphia and Broward County Public Schools. My interests include statistical programming, statistical modeling, and the use of applied research and evaluation methods for informing policy and practice. I am certified in the Institute for Education Sciences' <a href="https://ies.ed.gov/ncee/wwc/#">What Works Clearinghouse</a> Group Design Standards.
+I am a Senior Researcher at <a href="https://www.icf.com/#">ICF</a>, engaging primarily in education and social research and evaluation work. I have worked in the accountability domain in several large, urban school districts including Charlotte-Mecklenburg Schools, the School District of Philadelphia and Broward County Public Schools. My interests include statistical programming, statistical modeling, and the use of applied research and evaluation methods for informing policy and practice. I am certified in the Institute for Education Sciences' <a href="https://ies.ed.gov/ncee/wwc/#">What Works Clearinghouse</a> Group Design Standards.
