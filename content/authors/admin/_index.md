@@ -9,7 +9,7 @@ education:
     institution: Shippensburg University
     year: 1999
   - course: BA in Psychology
-    institution: Shippensburg University <a href="https://www.ship.edu/">Ship</a>
+    institution: Shippensburg University
     year: 1997
 email: jasonschoeneberger@gmail.com
 highlight_name: true
