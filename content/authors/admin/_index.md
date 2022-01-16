@@ -1,5 +1,5 @@
 ---
-bio: My research interests include statistical programming and data management, educational research, measurerment and evaluation.
+bio: My research interests include statistical programming and data management, educational research, measurement and evaluation.
 education:
   courses:
   - course: PhD in Educational Psychology-Research
@@ -15,8 +15,8 @@ email: jasonschoeneberger@gmail.com
 highlight_name: true
 interests:
 - Education Research & Measurement
-- Randomized Controlled Trials
-- Regression Discontinuity Designs
+- Statistical Programming & Analysis
+- Applied Evaluation Methods
 organizations:
 - name: ICF
   url: https://www.https://www.icf.com//
@@ -44,4 +44,4 @@ superuser: true
 title: Jason A. Schoeneberger
 ---
 
-I am a Senior Researcher at ICF, engaging primarily in education and social research and evaluation work. I have worked in the accountability domain in several large, urban school districts including Charlotte-Mecklenburg Schools, the School District of Philadelphia and Broward County Public Schools. My interests include statistical programming, statistical modeling, and the use of applied research and evaluation methods for informing policy and practice. 
+I am a Senior Researcher at ICF, engaging primarily in education and social research and evaluation work. I have worked in the accountability domain in several large, urban school districts including Charlotte-Mecklenburg Schools, the School District of Philadelphia and Broward County Public Schools. My interests include statistical programming, statistical modeling, and the use of applied research and evaluation methods for informing policy and practice. I am certified in the Institute for Education Sciences' What Works Clearinghouse Group Design Standards. <a href="https://ocw.mit.edu/courses/sloan-school-of-management/15-401-finance-theory-i-fall-2008/#">Finance Theory I</a>
