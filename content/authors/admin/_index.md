@@ -24,7 +24,7 @@ role: Senior Researcher
 social:
 - icon: envelope
   icon_pack: fa
-  link: "mailto: jasonschoeneberger@gmail.com""
+  link: "mailto: jasonschoeneberger@gmail.com"
 - display:
     header: true
   icon: twitter
