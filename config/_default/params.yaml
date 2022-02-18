@@ -52,7 +52,7 @@ highlight_languages:
   - r
   - python
   - latex
-math: true
+math: false
 diagram: false
 privacy_pack: false
 edit_page:
