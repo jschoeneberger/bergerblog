@@ -22,6 +22,9 @@ On this page, you'll find some examples of the types of technical content that c
 
 ### Code
 We begin first by reading in some RD data I simulated:
+
+[Download file](/rd_data.xlsx)
+
 ```r
 rd_dat <- read.xlsx("rd_data.xlsx", sheetIndex=1, header=TRUE, colClasses=NA)
 ```
