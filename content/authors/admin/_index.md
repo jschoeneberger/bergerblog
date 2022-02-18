@@ -24,7 +24,7 @@ role: Senior Researcher
 social:
 - icon: envelope
   icon_pack: fas
-  link: /#contact
+  link: jasonschoeneberger@gmail.com
 - display:
     header: true
   icon: twitter
