@@ -10,7 +10,9 @@ title: Mediation in a Regression Discontinuity Context
 tags: ["regression discontinuity", "mediation"]
 ---
 
-Regression Discontinuity designs have recently grown in popularity among methodologists and applied researchers. Isn't that wonderful...You can focus on the content and Academic handles the rest.
+Regression Discontinuity Designs (RD or RDDs; Cattaneo, Idrobo & Titiunik, 2018a; 2018b; Cook, Shadish and Wong, 2008; Hahn, Todd & van der Klaauw, 2001; Imbens & Lemieux, 2008a; Jacob & Lefgren, 2004a; Ludwig & Miller, 2007; Shadish, Cook & Campbell, 2002) is an increasingly popular, alternative design capable of yielding impact estimates with a level of internal validity near that of an RCT (Aiken, West, Schwalm, Carroll & Hsuing, 1998; Berk, Barnes, Ahlman & Kurtz, 2010; Black, Galdo & Smith, 2007; Buddelmeyer & Skoufias, 2004; Shadish, Galindo, Wong, Steiner & Cook, 2013).
+
+Isn't that wonderful...You can focus on the content and Academic handles the rest.
 
 **Highlight your code snippets, take notes on math classes, and draw diagrams from textual representation.**
 
@@ -34,6 +36,18 @@ renders as
 import pandas as pd
 data = pd.read_csv("data.csv")
 data.head()
+```
+Let's start by generating a scatterplot of the raw data, by group assignment.  Here's the code:
+```r
+ggplot(rd_dat, aes(x = X_c, y = Y_adj, color = tx_a)) + 
+  geom_point(size=2,alpha = 0.25) + 
+  geom_smooth(aes(fill = tx_a), method = "loess") + 
+  geom_vline(xintercept = 0, linetype = "dashed", color="black", size=1) +
+  theme_classic() +
+  labs(x="Centered Assignment", y = "Y", color = "Treatment", fill="Treatment") + 
+  scale_x_continuous(limits = c(-round(max(abs(rd_dat$X_c))), round(max(abs(rd_dat$X_c))))) +
+  scale_y_continuous(limits = c(-ceiling(max(abs(rd_dat$Y_adj))), ceiling(max(abs(rd_dat$Y_adj))))) +
+  scale_color_brewer(palette="Set1", direction=-1) + scale_fill_brewer(palette="Set1", direction=-1)
 ```
 
 ### Charts
