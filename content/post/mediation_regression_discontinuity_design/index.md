@@ -23,7 +23,6 @@ On this page, you'll find some examples of the types of technical content that c
 
 ### Code
 
-
 Let's start by generating a scatterplot of the raw data, by group assignment.  Here's the code:
 ```r
 ggplot(rd_dat, aes(x = X_c, y = Y_adj, color = tx_a)) + 
