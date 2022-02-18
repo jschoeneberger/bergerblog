@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ---
 date: "2022-18-02"
 diagram: true
