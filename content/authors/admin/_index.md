@@ -23,7 +23,7 @@ organizations:
 role: Senior Researcher
 social:
 - icon: envelope
-  icon_pack: fas
+  icon_pack: fa
   link: "mailto: jasonschoeneberger@gmail.com""
 - display:
     header: true
