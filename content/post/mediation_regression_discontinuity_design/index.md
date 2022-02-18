@@ -7,6 +7,7 @@ image:
   placement: 1
 math: true
 title: Mediation in a Regression Discontinuity Context
+tags: ["regression discontinuity", "mediation"]
 ---
 
 Regression Discontinuity Designs (RD or RDDs; Cattaneo, Idrobo & Titiunik, 2018a; 2018b; Cook, Shadish and Wong, 2008; Hahn, Todd & van der Klaauw, 2001; Imbens & Lemieux, 2008a; Jacob & Lefgren, 2004a; Ludwig & Miller, 2007; Shadish, Cook & Campbell, 2002) is an increasingly popular, alternative design capable of yielding impact estimates with a level of internal validity near that of an RCT (Aiken, West, Schwalm, Carroll & Hsuing, 1998; Berk, Barnes, Ahlman & Kurtz, 2010; Black, Galdo & Smith, 2007; Buddelmeyer & Skoufias, 2004; Shadish, Galindo, Wong, Steiner & Cook, 2013).
@@ -20,6 +21,10 @@ On this page, you'll find some examples of the types of technical content that c
 ## Examples
 
 ### Code
+We begin first by reading in some RD data I simulated:
+```r
+rd_dat <- read.xlsx("rd_data.xlsx", sheetIndex=1, header=TRUE, colClasses=NA)
+```
 
 Let's start by generating a scatterplot of the raw data, by group assignment.  Here's the code:
 ```r
