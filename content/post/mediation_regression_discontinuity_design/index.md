@@ -7,6 +7,7 @@ image:
   placement: 1
 math: true
 title: Mediation in a Regression Discontinuity Context
+tags: ["regression discontinuity", "mediation"]
 ---
 
 Regression Discontinuity designs have recently grown in popularity among methodologists and applied researchers. You can focus on the content and Academic handles the rest.

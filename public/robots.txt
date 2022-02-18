@@ -1,0 +1,3 @@
+User-agent: *
+
+Sitemap: https://bergerblog.netlify.app/sitemap.xml
