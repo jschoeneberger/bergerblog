@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ---
 bio: My research interests include statistical programming and data management, educational research, measurement and evaluation.
 education:
