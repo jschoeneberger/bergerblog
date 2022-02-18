@@ -21,9 +21,7 @@ On this page, you'll find some examples of the types of technical content that c
 ## Examples
 
 ### Code
-We begin first by reading in some RD data I simulated:
-
-[Download file](/rd_data.xlsx)
+We begin by downloading the Excel file containing RD data I simulated [here](/rd_data.xlsx). Place the file in the directory of your choice, then edit the path in the following code to create the rd_dat object:
 
 ```r
 rd_dat <- read.xlsx("rd_data.xlsx", sheetIndex=1, header=TRUE, colClasses=NA)
