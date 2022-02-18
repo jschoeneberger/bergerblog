@@ -10,7 +10,7 @@ title: Mediation in a Regression Discontinuity Context
 tags: ["regression discontinuity", "mediation"]
 ---
 
-Regression Discontinuity designs have recently grown in popularity among methodologists and applied researchers. You can focus on the content and Academic handles the rest.
+Regression Discontinuity designs have recently grown in popularity among methodologists and applied researchers. Isn't that wonderful...You can focus on the content and Academic handles the rest.
 
 **Highlight your code snippets, take notes on math classes, and draw diagrams from textual representation.**
 
