@@ -22,10 +22,7 @@ On this page, you'll find some examples of the types of technical content that c
 ## Examples
 
 ### Code
-We begin first by reading in some RD data I simulated:
-```r
-rd_dat <- read.xlsx("rd_data.xlsx", sheetIndex=1, header=TRUE, colClasses=NA)
-```
+
 Let's start by generating a scatterplot of the raw data, by group assignment.  Here's the code:
 ```r
 ggplot(rd_dat, aes(x = X_c, y = Y_adj, color = tx_a)) + 
