@@ -63,14 +63,14 @@ be_sim = function(n, tx_eff, tx_eff_sd){
   #here we add a positive effect to high-need and a negative effect to low need
   raw_dat_frm <- raw_dat_frm %>%
     rowwise() %>%
-    mutate(c2 = ifelse(tx==1, rbinom(n=1, size=1, prob=0.7), rbinom(n=1, size=1, prob=0.3) )) %>%
+    mutate(c2 = ifelse(tx==1, rbinom(n=1, size=1, prob=0.51), rbinom(n=1, size=1, prob=0.49) )) %>%
     ungroup() %>% 
     mutate(tx_eff_adj = case_when(tx==1 ~ rnorm(1, mean=tx_eff, sd=tx_eff_sd),
                                   (tx==0) ~ rnorm(1, mean=((tx_eff*-1)), sd=tx_eff_sd),
                                   TRUE ~ rnorm(1, mean=(tx_eff*-1), sd=tx_eff_sd) ),
            c1 = c1 + tx_eff_adj) 
 }
-be_dat = replicate(1, be_sim(n = 100, tx_eff=.2, tx_eff_sd=0), simplify = FALSE)
+be_dat = replicate(1, be_sim(n = 100, tx_eff=.05, tx_eff_sd=0), simplify = FALSE)
 be_dat <- data.frame(be_dat)  
 be_dat <- be_dat %>% mutate(tx_a = case_when(tx == 0 ~ "CT", tx == 1 ~ "TX")) %>% 
   dplyr::select(y,x,c1,c2,tx,tx_a)
