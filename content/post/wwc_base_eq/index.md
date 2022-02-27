@@ -8,20 +8,76 @@ tags: ["RCT", "WWC", "What Works Clearinghouse", "random assignment", "baseline 
 
 Research studies using random assignment are considered the "gold standard" because they yield balance on both observed and unobserved covariates between treatment groups. A small conceptual detail that is often left behind, however is that this balance is achieved _in expectation_. The reality is that imbalance among covariates between groups, sometimes called unhappy randomization, occurs more frequently than we'd like to admit. In fact, it occurs frequently enough that methodologists have developed methods for _re_-randomizing to achieve covariate balance (see Morgan & Rubin, 2012; 2015).
 
-The <a href="https://ies.ed.gov/">Institute for Education Sciences'</a> <a href="https://ies.ed.gov/ncee/wwc/">What Works Clearinghouse (WWC)</a> reviews education research studies for the purpose of determining whether rigorous methods have been used and summarizing findings for education practitioners. The agency is effectively trying to determine "what works in education?" The <a href="https://www.dol.gov/">U.S. Department of Labor</a> maintains the <a href="https://clear.dol.gov/">Clearinghouse for Labor Evaluation and Research (CLEAR)</a> for similar purposes. The WWC continuously develops and maintains 
+The <a href="https://ies.ed.gov/">Institute for Education Sciences'</a><a href="https://ies.ed.gov/ncee/wwc/">What Works Clearinghouse (WWC)</a> reviews education research studies for the purpose of determining whether rigorous methods have been used and summarizing findings for education practitioners. The agency is effectively trying to determine "what works in education?" The <a href="https://www.dol.gov/">U.S. Department of Labor</a> maintains the <a href="https://clear.dol.gov/">Clearinghouse for Labor Evaluation and Research (CLEAR)</a> for similar purposes. The WWC continuously develops and maintains 
 <a href="https://ies.ed.gov/ncee/wwc/Docs/referenceresources/WWC-Standards-Handbook-v4-1-508.pdf">standards</a> for a number of research designs that can be used to assess research rigor and quality. One of the key research study aspects the standards covers is the assessment of baseline equivalence. 
 
 ## Baseline Equivalence
 
-The WWC establishes review protocols for various content areas (e.g., Early Childhood, Reading, etc.). These protocols outline how reviewers should examine research studies related to the content area. With regard to baseline equivalence, the protocol will list characteristics (covariates) that should be assessed for equivalence between treatment and comparison groups at _baseline_ (prior to the introduction of the intervention). For example, if a research study is examining the impact of a middle school math intervention on math achievement (say, scores on a standardized math assessment), then the review protocol will likely specify that groups should ideally be balanced on the same, or similar, standardized math assessment. Baseline equivalence of the pre-intervention measure must be assessed for the _analytic sample_: the set of subjects from the intervention and comparison groups used to estimate outcomes. 
+The WWC establishes review protocols for various content areas (e.g., Early Childhood, Reading, etc.). These protocols outline how reviewers should examine research studies related to the content area. With regard to baseline equivalence, the protocol will list characteristics (covariates) that should be assessed for equivalence between treatment and comparison groups at _baseline_ (prior to the introduction of the intervention). For example, if a research study is examining the impact of a middle school math intervention on math achievement (say, scores on a standardized math assessment), then the review protocol will likely specify that groups should ideally be balanced on the same, or similar, standardized math assessment. Baseline equivalence of the pre-intervention measure must be assessed for the _analytic sample_: the set of subjects from the intervention and comparison groups used to estimate outcomes.
+
 ### Code
-We begin by downloading the Excel file containing RD data I simulated [here](/rd_data.xlsx). Place the file in the directory of your choice, then edit the path in the following code to create the rd_dat object:
+We begin by simulating some data to work with, representing the analytic sample for a fictious RCT study:
 
 ```r
-rd_dat <- read.xlsx("rd_data.xlsx", sheetIndex=1, header=TRUE, colClasses=NA)
+#set up packages
+Packages <- c("mvtnorm","tidyverse","aod")
+invisible(lapply(Packages, library, character.only = TRUE))
+
+#simulate some data for running the be_eq function
+#n = number of records/units
+#tx_eff = treatment effect (in sd units; e.g. .5 = 1/2 SD)
+#tx_eff_sd = treatment effect standard deviation
+be_sim = function(n, tx_eff, tx_eff_sd){
+  #set number of units to sim
+  n_units <- n
+  
+  #set seed
+  set.seed(1234)
+  
+  ##create correlation matrix
+  r_mat <- matrix(0, nrow=3, ncol=3) 
+  colnames(r_mat) <- c("y","x","c1")
+  
+  ##specify desired correlations in lower left triangle
+  r_mat[2,1] <- .25; r_mat[3,1] <- .15; 
+  r_mat[3,2] <- .10;
+  
+  #use transpose and add to upper triangle
+  r_mat <- r_mat+t(r_mat)
+  diag(r_mat) <-1
+  
+  ##generate raw correlated data
+  ##set 1 row 6 column matrix of means equal to 0
+  mu <- rep(0,3)
+  raw_dat_mat = rmvnorm(n_units,mean=mu,sigma=r_mat)
+  colnames(raw_dat_mat) <- c("y","x","c1")
+  
+  ##create data frame
+  raw_dat_frm <- data.frame(raw_dat_mat)
+  
+  ##rank records based on the known need, where higher value is more need:
+  raw_dat_frm$xrank <- rank(raw_dat_frm$x, ties.method= "first")  # first occurrence wins
+  raw_dat_frm$tx <- as.numeric(1)
+  raw_dat_frm$tx[raw_dat_frm$xrank > n_units/2] <- as.numeric(0)
+  
+  #here we add a positive effect to high-need and a negative effect to low need
+  raw_dat_frm <- raw_dat_frm %>%
+    rowwise() %>%
+    mutate(c2 = ifelse(tx==1, rbinom(n=1, size=1, prob=0.7), rbinom(n=1, size=1, prob=0.3) )) %>%
+    ungroup() %>% 
+    mutate(tx_eff_adj = case_when(tx==1 ~ rnorm(1, mean=tx_eff, sd=tx_eff_sd),
+                                  (tx==0) ~ rnorm(1, mean=((tx_eff*-1)), sd=tx_eff_sd),
+                                  TRUE ~ rnorm(1, mean=(tx_eff*-1), sd=tx_eff_sd) ),
+           c1 = c1 + tx_eff_adj) 
+}
+be_dat = replicate(1, be_sim(n = 100, tx_eff=.2, tx_eff_sd=0), simplify = FALSE)
+be_dat <- data.frame(be_dat)  
+be_dat <- be_dat %>% mutate(tx_a = case_when(tx == 0 ~ "CT", tx == 1 ~ "TX")) %>% 
+  dplyr::select(y,x,c1,c2,tx,tx_a)
 ```
 
-Let's start by generating a scatterplot of the raw data, by group assignment.  Here's the code:
+This gives us a smaller version of a data file like we might have when analyzing data from a research study: an outcome variable _y_, an independent variable _x_, two covariates of interest _c1_ and _c2_ (the latter a binary), and a numeric and alphanumeric representation of treatment group _tx_ and _tx_a_, respectively. For our purposes, we are interested in assessing the baseline equivalence of the two covariates _c1_ and _c2_. 
+
 ```r
 ggplot(rd_dat, aes(x = X_c, y = Y_adj, color = tx_a)) + 
   geom_point(size=2,alpha = 0.25) + 
