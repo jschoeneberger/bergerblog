@@ -123,7 +123,8 @@ renders as
 $$f(k;p_{0}^{*}) = \begin{cases}p_{0}^{*} & \text{if }k=1, \\\\
 1-p_{0}^{*} & \text{if }k=0.\end{cases}$$
 
+## References
+Morgan, K.L. & Rubin, D.B. (2015). Rerandomization to Balance Tiers of Covariates. _Journal of the American Statistical Association (JASA), 110(512),_ 1412-1421. DOI: <a href="https://doi.org/10.1080/01621459.2015.1079528">10.1080/01621459.2015.1079528</a> 
 
+Morgan, K.L. & Rubin, D.B. (2012). Rerandomization to Improve Covariate Balance in Experiments. _Annals of Statistics, 40(2),_ 1262-1282. DOI: <a href="https://doi.org/10.1214/12-AOS1008">10.1214/12-AOS1008</a>
 
-### Did you find this page helpful? Consider sharing it 🙌
-=======
