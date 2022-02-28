@@ -8,7 +8,7 @@ tags: ["RCT", "WWC", "What Works Clearinghouse", "random assignment", "baseline 
 
 Research studies using random assignment are considered the "gold standard" because they yield balance on both observed and unobserved covariates between treatment groups. A small conceptual detail that is often left behind, however is that this balance is achieved _in expectation_. The reality is that imbalance among covariates between groups, sometimes called unhappy randomization, occurs more frequently than we'd like to admit. In fact, it occurs frequently enough that methodologists have developed methods for _re_-randomizing to achieve covariate balance (see Morgan & Rubin, 2012; 2015).
 
-The <a href="https://ies.ed.gov/">Institute for Education Sciences'</a><a href="https://ies.ed.gov/ncee/wwc/">What Works Clearinghouse (WWC)</a> reviews education research studies for the purpose of determining whether rigorous methods have been used and summarizing findings for education practitioners. The agency is effectively trying to determine "what works in education?" The <a href="https://www.dol.gov/">U.S. Department of Labor</a> maintains the <a href="https://clear.dol.gov/">Clearinghouse for Labor Evaluation and Research (CLEAR)</a> for similar purposes. The WWC continuously develops and maintains 
+The <a href="https://ies.ed.gov/">Institute for Education Sciences' </a><a href="https://ies.ed.gov/ncee/wwc/">What Works Clearinghouse (WWC)</a> reviews education research studies for the purpose of determining whether rigorous methods have been used and summarizing findings for education practitioners. The agency is effectively trying to determine "what works in education?" The <a href="https://www.dol.gov/">U.S. Department of Labor</a> maintains the <a href="https://clear.dol.gov/">Clearinghouse for Labor Evaluation and Research (CLEAR)</a> for similar purposes. The WWC continuously develops and maintains 
 <a href="https://ies.ed.gov/ncee/wwc/Docs/referenceresources/WWC-Standards-Handbook-v4-1-508.pdf">standards</a> for a number of research designs that can be used to assess research rigor and quality. One of the key research study aspects the standards covers is the assessment of baseline equivalence. 
 
 ## Baseline Equivalence
@@ -16,7 +16,7 @@ The <a href="https://ies.ed.gov/">Institute for Education Sciences'</a><a href="
 The WWC establishes review protocols for various content areas (e.g., Early Childhood, Reading, etc.). These protocols outline how reviewers should examine research studies related to the content area. With regard to baseline equivalence, the protocol will list characteristics (covariates) that should be assessed for equivalence between treatment and comparison groups at _baseline_ (prior to the introduction of the intervention). For example, if a research study is examining the impact of a middle school math intervention on math achievement (say, scores on a standardized math assessment), then the review protocol will likely specify that groups should ideally be balanced on the same, or similar, standardized math assessment. Baseline equivalence of the pre-intervention measure must be assessed for the _analytic sample_: the set of subjects from the intervention and comparison groups used to estimate outcomes.
 
 ### Code
-We begin by simulating some data to work with, representing the analytic sample for a fictious RCT study:
+We begin by simulating some data to work with, representing the analytic sample for a fictitous RCT study:
 
 ```r
 #set up packages
