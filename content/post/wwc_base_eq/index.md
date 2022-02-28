@@ -76,20 +76,91 @@ be_dat <- be_dat %>% mutate(tx_a = case_when(tx == 0 ~ "CT", tx == 1 ~ "TX")) %>
   dplyr::select(y,x,c1,c2,tx,tx_a)
 ```
 
-This gives us a smaller version of a data file like we might have when analyzing data from a research study: an outcome variable _y_, an independent variable _x_, two covariates of interest _c1_ and _c2_ (the latter a binary), and a numeric and alphanumeric representation of treatment group _tx_ and _tx_a_, respectively. For our purposes, we are interested in assessing the baseline equivalence of the two covariates _c1_ and _c2_. 
+This gives us a small version of a data file like we might have when analyzing data from a research study: an outcome variable _y_, an independent variable _x_, two covariates of interest _c1_ and _c2_ (the latter a binary), and a numeric and alphanumeric representation of treatment group _tx_ and _tx_a_, respectively. For our purposes, we are interested in assessing the baseline equivalence of the two covariates _c1_ and _c2_. 
+
+Now we'll step through chunks of the baseline equivalence function. First, we see the function takes four input arguments: the data file to be analyzed (in_dat), an argument representing the variable we want to assess for equivalence (dv), the variable denoting the treatment groups (iv), and the type of model based on the dv (either "t" for continuous variables or "l" for binary variables). Note that the function, as I've specified it, assumes a character representation of the intervention groups where control/comparison/BAU is coded as "CT" and treatment/intervention is coded as "TX". The initial step is to split the file into separate intervention groups. The function also assumes that the data frame specified as the in_dat argument represents the analytic sample (i.e., the sample that would be used to estimate the primary outcome of interest, _y_). Effectively, this data frame should already have accounted/removed records with missing data, etc.
 
 ```r
-ggplot(rd_dat, aes(x = X_c, y = Y_adj, color = tx_a)) + 
-  geom_point(size=2,alpha = 0.25) + 
-  geom_smooth(aes(fill = tx_a), method = "loess") + 
-  geom_vline(xintercept = 0, linetype = "dashed", color="black", size=1) +
-  theme_classic() +
-  labs(x="Centered Assignment", y = "Y", color = "Treatment", fill="Treatment") + 
-  scale_x_continuous(limits = c(-round(max(abs(rd_dat$X_c))), round(max(abs(rd_dat$X_c))))) +
-  scale_y_continuous(limits = c(-ceiling(max(abs(rd_dat$Y_adj))), ceiling(max(abs(rd_dat$Y_adj))))) +
-  scale_color_brewer(palette="Set1", direction=-1) + scale_fill_brewer(palette="Set1", direction=-1)
+##baseline equivalence function for continuous and binary covariates
+be_eq = function(in_dat, dv, iv, model){
+  #split data by tx-ct indicator
+  ct_dat <- in_dat %>% filter(in_dat[[iv]] == "CT")
+  tx_dat <- in_dat %>% filter(in_dat[[iv]] == "TX")
+```
+The next chunk of code compiles information for when the model "t" is specified for an assessment of equivalence for a continuous variable. The first step creates separate vectors based on the inputs to the function to conduct a t-test to compare the two groups. We then summarize data contained in each of the separate data frames we created in the previous step: the number of records in the file, as well as the mean and standard deviation of the variable of interest. We also calculate Hedges' _g_ (1981) with a bias correction for small sample sizes $\omega = [(1-3/(4*(tx_n+ct_n)-9))] (Borenstein & Hedges, 2019). We then apply the WWC's ranges for baseline equivalence effect sizes (ie., Satisfies, Stat Adjust or Unsatisfied; see Table II.2 in the <a href="https://ies.ed.gov/ncee/wwc/Docs/referenceresources/WWC-Standards-Handbook-v4-1-508.pdf">WWC Standards Handbook V4.1</a>).
+
+```r
+if (model == 't') {
+    #set vectors for t-test
+    y <- in_dat[[dv]]
+    x <- in_dat[[iv]]
+    t <- t.test(y~x)
+    
+    #summarize data, calculate hedges and labels
+    hedge <- bind_cols(ct_dat %>% 
+                         mutate(covar = dv,
+                          ct_n = n(), ct_mn = round(mean(ct_dat[[dv]],na.rm=T),3), ct_sd = round(sd(ct_dat[[dv]],na.rm=T)),3) %>%
+                         distinct(across(c(covar, ct_n, ct_mn, ct_sd))),
+                       tx_dat %>% 
+                         mutate(tx_n = n(), tx_mn = round(mean(tx_dat[[dv]],na.rm=T),3), tx_sd = round(sd(tx_dat[[dv]],na.rm=T)),3) %>%
+                         distinct(across(c(tx_n, tx_mn, tx_sd))) ) %>% 
+      mutate(hedge_g = round((tx_mn - ct_mn)*(1-3/(4*(tx_n+ct_n)-9)) / 
+                               sqrt((((ct_n-1)*(ct_sd**2)) + ((tx_n-1)*(tx_sd**2)))/(ct_n + tx_n - 2)), 3),
+             base_eq = case_when(abs(hedge_g) >= 0 & abs(hedge_g) <= .05 ~ "Satisfied",
+                                 abs(hedge_g) > 0.05 & abs(hedge_g) <= .25 ~ "Stat Adjust",                       
+                                 abs(hedge_g) > 0.25 ~ "Unsatisfied"),
+             t_val = round(as.numeric(t$statistic),3),
+             t_df = round(as.numeric(t$parameter),3),
+             t_pval = round(t$p.value,3)  ) 
+  }
 ```
 
+The last piece of code summarizes data when the variable of interest is binary. These steps are generally the same, though a logistic regression is conducted for obtaining an inferential assessment of the difference, the formula for the standard deviation of a binary variable is used, and the formula for the effect size (the Cox index) makes use of the logistic regression coefficient (Sanchez-Meca et al., 2003).
+
+```r
+  if (model == 'l') {
+    #aod package for conducting wald test
+    require(aod)
+    #run logistic regression using binary baseline variable as outcome
+    log_mod <- glm(in_dat[[dv]] ~ in_dat[[iv]], data = in_dat, family = "binomial")
+    lor <- round(as.numeric(coef(log_mod)[2]),5)
+    wald <- wald.test(b = coef(log_mod), Sigma = vcov(log_mod), Terms = 2)
+    hedge <- bind_cols(ct_dat %>% 
+                         mutate(covar = dv, ct_n = n(), ct_mn = round(mean(ct_dat[[dv]],na.rm=T)),3) %>%
+                         mutate(ct_sd = round(sqrt(ct_mn*(1-ct_mn))),3) %>%
+                         distinct(across(c(covar, ct_n, ct_mn, ct_sd))),
+                       tx_dat %>% 
+                         mutate(tx_n = n(), tx_mn = round(mean(tx_dat[[dv]],na.rm=T)),3) %>% 
+                         mutate(tx_sd = round(sqrt(tx_mn*(1-tx_mn))),3) %>% 
+                         distinct(across(c(tx_n, tx_mn, tx_sd))) ) %>% 
+      mutate(cox_d = round((1-3/(4*(tx_n+ct_n)-9))*(lor/1.65), 3),
+             base_eq = case_when(abs(cox_d) >= 0 & abs(cox_d) <= .05 ~ "Satisfied",
+                                 abs(cox_d) > 0.05 & abs(cox_d) <= .25 ~ "Stat Adjust",                       
+                                 abs(cox_d) > 0.25 ~ "Unsatisfied"),
+             wchi_val = round(as.numeric(wald$result[[1]][1]),3),
+             wchi_df = round(as.numeric(wald$result[[1]][2]),3),
+             wchi_pval = round(as.numeric(wald$result[[1]][3]),3)  )   
+  }
+  return(hedge)
+}
+```
+If we call the function using our simulated data to assess the baseline equivalence of _c1_, we get the output shown below. The absolute value of the effect size is greater than 0.25, resulting in a baseline equivalence assessment of 'Unsatisfied'. The accompanying t-test output shows the difference between the comparison and treatment groups to be statistically significant, with the mean outcome larger for the comparison group. 
+
+```r
+be_eq(in_dat=be_dat, dv="c1", iv="tx_a", model="t")
+
+  covar ct_n ct_mn ct_sd tx_n  tx_mn tx_sd hedge_g     base_eq t_val   t_df t_pval
+1    c1   50 0.304     1   50 -0.334     1  -0.633 Unsatisfied 3.058 97.734  0.003
+```
+
+We can also assess the binary covariate _c2_ using the same function call by specifying model = "l". The absolute value of the effect size for c2 was just under 0.25, resulting in a label of 'Statistical Adjustment'. This variable would have to be included in the final outcome estimate models to align with WWC standards. 
+
+```r
+be_eq(in_dat=be_dat, dv="c2", iv="tx_a", model="l")
+
+  covar ct_n ct_mn ct_sd tx_n tx_mn tx_sd cox_d     base_eq wchi_val wchi_df wchi_pval
+1    c2   50     0     0   50     1     0 0.241 Stat Adjust    0.997       1     0.318
+```
 ### Math
 
 Academic supports a Markdown extension for $\LaTeX$ math. You can enable this feature by toggling the `math` option in your `config/_default/params.toml` file.
@@ -124,7 +195,13 @@ $$f(k;p_{0}^{*}) = \begin{cases}p_{0}^{*} & \text{if }k=1, \\\\
 1-p_{0}^{*} & \text{if }k=0.\end{cases}$$
 
 ## References
+Borenstein, M. & Hedges, L. V. (2019). Effect sizes for meta-analysis. In H. Cooper, L. V. Hedges, & J. C. Valentine (Eds.), _The handbook of research synthesis and meta-analysis_ (3rd ed., pp. 207–244). New York, NY: Russell Sage Foundation.
+
+Hedges, L. V. (1981). Distribution theory for Glass’s estimator of effect size and related estimators. _Journal of Educational and Behavioral Statistics, 6(2),_ 107–128. DOI: <a href="https://doi.org/10.3102/10769986006002107">10.3102/10769986006002107</a>
+
 Morgan, K.L. & Rubin, D.B. (2015). Rerandomization to Balance Tiers of Covariates. _Journal of the American Statistical Association (JASA), 110(512),_ 1412-1421. DOI: <a href="https://doi.org/10.1080/01621459.2015.1079528">10.1080/01621459.2015.1079528</a> 
 
 Morgan, K.L. & Rubin, D.B. (2012). Rerandomization to Improve Covariate Balance in Experiments. _Annals of Statistics, 40(2),_ 1262-1282. DOI: <a href="https://doi.org/10.1214/12-AOS1008">10.1214/12-AOS1008</a>
+
+Sanchez-Meca, J., Marin-Martinez, F., & Chacon-Moscoso, S. (2003). Effect-size indices for dichotomous outcomes in meta-analysis. _Psychological Methods, 8(4),_ 448–467. DOI: <a href="https://doi.org/10.1037/1082-989X.8.4.448">10.1037/1082-989X.8.4.448</a>
 
