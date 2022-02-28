@@ -1,7 +1,8 @@
 ---
-date: "2022-26-02"
+date: "2022-28-02"
 diagram: true
 highlight: true
+math: true
 title: Assessing Baseline Equivalence Using What Works Clearinghouse Standards
 tags: ["RCT", "WWC", "What Works Clearinghouse", "random assignment", "baseline equivalence", "causal inference", "covariate balance"]
 ---
@@ -16,6 +17,7 @@ The <a href="https://ies.ed.gov/">Institute for Education Sciences' </a><a href=
 The WWC establishes review protocols for various content areas (e.g., Early Childhood, Reading, etc.). These protocols outline how reviewers should examine research studies related to the content area. With regard to baseline equivalence, the protocol will list characteristics (covariates) that should be assessed for equivalence between treatment and comparison groups at _baseline_ (prior to the introduction of the intervention). For example, if a research study is examining the impact of a middle school math intervention on math achievement (say, scores on a standardized math assessment), then the review protocol will likely specify that groups should ideally be balanced on the same, or similar, standardized math assessment. Baseline equivalence of the pre-intervention measure must be assessed for the _analytic sample_: the set of subjects from the intervention and comparison groups used to estimate outcomes.
 
 ### Code
+#### Data Simulation
 We begin by simulating some data to work with, representing the analytic sample for a fictitous RCT study:
 
 ```r
@@ -78,7 +80,9 @@ be_dat <- be_dat %>% mutate(tx_a = case_when(tx == 0 ~ "CT", tx == 1 ~ "TX")) %>
 
 This gives us a small version of a data file like we might have when analyzing data from a research study: an outcome variable _y_, an independent variable _x_, two covariates of interest _c1_ and _c2_ (the latter a binary), and a numeric and alphanumeric representation of treatment group _tx_ and _tx_a_, respectively. For our purposes, we are interested in assessing the baseline equivalence of the two covariates _c1_ and _c2_. 
 
-Now we'll step through chunks of the baseline equivalence function. First, we see the function takes four input arguments: the data file to be analyzed (in_dat), an argument representing the variable we want to assess for equivalence (dv), the variable denoting the treatment groups (iv), and the type of model based on the dv (either "t" for continuous variables or "l" for binary variables). Note that the function, as I've specified it, assumes a character representation of the intervention groups where control/comparison/BAU is coded as "CT" and treatment/intervention is coded as "TX". The initial step is to split the file into separate intervention groups. The function also assumes that the data frame specified as the in_dat argument represents the analytic sample (i.e., the sample that would be used to estimate the primary outcome of interest, _y_). Effectively, this data frame should already have accounted/removed records with missing data, etc.
+#### Baseline Equivalence Function
+
+Now we'll step through chunks of the baseline equivalence function. First, we see the function takes four input arguments: the data file to be analyzed (in_dat), an argument representing the variable we want to assess for equivalence (dv), the variable denoting the treatment groups (iv), and the type of model based on the dv (either "t" for continuous variables or "l" for binary variables). Note that the function, as I've specified it, assumes a character representation of the intervention groups where control/comparison/BAU is coded as "CT" and treatment/intervention is coded as "TX". The initial step is to split the file into separate intervention groups. The function also assumes that the data frame submitted to the function represents the analytic sample (i.e., the sample that would be used to estimate the primary outcome of interest, _y_). Effectively, this data frame should already have accounted for/removed records with missing data, etc.
 
 ```r
 ##baseline equivalence function for continuous and binary covariates
