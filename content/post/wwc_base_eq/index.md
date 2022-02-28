@@ -99,10 +99,10 @@ if (model == 't') {
     #summarize data, calculate hedges and labels
     hedge <- bind_cols(ct_dat %>% 
                          mutate(covar = dv,
-                          ct_n = n(), ct_mn = round(mean(ct_dat[[dv]],na.rm=T),3), ct_sd = round(sd(ct_dat[[dv]],na.rm=T)),3) %>%
+                          ct_n = n(), ct_mn = round(mean(ct_dat[[dv]],na.rm=T),3), ct_sd = round(sd(ct_dat[[dv]],na.rm=T),3)) %>%
                          distinct(across(c(covar, ct_n, ct_mn, ct_sd))),
                        tx_dat %>% 
-                         mutate(tx_n = n(), tx_mn = round(mean(tx_dat[[dv]],na.rm=T),3), tx_sd = round(sd(tx_dat[[dv]],na.rm=T)),3) %>%
+                         mutate(tx_n = n(), tx_mn = round(mean(tx_dat[[dv]],na.rm=T),3), tx_sd = round(sd(tx_dat[[dv]],na.rm=T),3)) %>%
                          distinct(across(c(tx_n, tx_mn, tx_sd))) ) %>% 
       mutate(hedge_g = round((tx_mn - ct_mn)*(1-3/(4*(tx_n+ct_n)-9)) / 
                                sqrt((((ct_n-1)*(ct_sd**2)) + ((tx_n-1)*(tx_sd**2)))/(ct_n + tx_n - 2)), 3),
@@ -126,12 +126,12 @@ The last piece of code summarizes data when the variable of interest is binary. 
     lor <- round(as.numeric(coef(log_mod)[2]),5)
     wald <- wald.test(b = coef(log_mod), Sigma = vcov(log_mod), Terms = 2)
     hedge <- bind_cols(ct_dat %>% 
-                         mutate(covar = dv, ct_n = n(), ct_mn = round(mean(ct_dat[[dv]],na.rm=T)),3) %>%
-                         mutate(ct_sd = round(sqrt(ct_mn*(1-ct_mn))),3) %>%
+                         mutate(covar = dv, ct_n = n(), ct_mn = round(mean(ct_dat[[dv]],na.rm=T),3)) %>%
+                         mutate(ct_sd = round(sqrt(ct_mn*(1-ct_mn)),3)) %>%
                          distinct(across(c(covar, ct_n, ct_mn, ct_sd))),
                        tx_dat %>% 
-                         mutate(tx_n = n(), tx_mn = round(mean(tx_dat[[dv]],na.rm=T)),3) %>% 
-                         mutate(tx_sd = round(sqrt(tx_mn*(1-tx_mn))),3) %>% 
+                         mutate(tx_n = n(), tx_mn = round(mean(tx_dat[[dv]],na.rm=T),3)) %>% 
+                         mutate(tx_sd = round(sqrt(tx_mn*(1-tx_mn)),3)) %>% 
                          distinct(across(c(tx_n, tx_mn, tx_sd))) ) %>% 
       mutate(cox_d = round((1-3/(4*(tx_n+ct_n)-9))*(lor/1.65), 3),
              base_eq = case_when(abs(cox_d) >= 0 & abs(cox_d) <= .05 ~ "Satisfied",
@@ -139,7 +139,7 @@ The last piece of code summarizes data when the variable of interest is binary. 
                                  abs(cox_d) > 0.25 ~ "Unsatisfied"),
              wchi_val = round(as.numeric(wald$result[[1]][1]),3),
              wchi_df = round(as.numeric(wald$result[[1]][2]),3),
-             wchi_pval = round(as.numeric(wald$result[[1]][3]),3)  )   
+             wchi_pval = round(as.numeric(wald$result[[1]][3]),3)  )  
   }
   return(hedge)
 }
@@ -150,7 +150,7 @@ If we call the function using our simulated data to assess the baseline equivale
 be_eq(in_dat=be_dat, dv="c1", iv="tx_a", model="t")
 
   covar ct_n ct_mn ct_sd tx_n  tx_mn tx_sd hedge_g     base_eq t_val   t_df t_pval
-1    c1   50 0.304     1   50 -0.334     1  -0.633 Unsatisfied 3.058 97.734  0.003
+1    c1   50 0.304 1.014   50 -0.334 1.069  -0.608 Unsatisfied 3.058 97.734  0.003
 ```
 
 We can also assess the binary covariate _c2_ using the same function call by specifying model = "l". The absolute value of the effect size for c2 was just under 0.25, resulting in a label of 'Statistical Adjustment'. This variable would have to be included in the final outcome estimate models to align with WWC standards. 
@@ -159,40 +159,8 @@ We can also assess the binary covariate _c2_ using the same function call by spe
 be_eq(in_dat=be_dat, dv="c2", iv="tx_a", model="l")
 
   covar ct_n ct_mn ct_sd tx_n tx_mn tx_sd cox_d     base_eq wchi_val wchi_df wchi_pval
-1    c2   50     0     0   50     1     0 0.241 Stat Adjust    0.997       1     0.318
+1    c2   50  0.46 0.498   50  0.56 0.496 0.241 Stat Adjust    0.997       1     0.318
 ```
-### Math
-
-Academic supports a Markdown extension for $\LaTeX$ math. You can enable this feature by toggling the `math` option in your `config/_default/params.toml` file.
-
-To render *inline* or *block* math, wrap your LaTeX math with `$...$` or `$$...$$`, respectively.
-
-Example **math block**:
-
-```latex
-$$\gamma_{n} = \frac{ 
-\left | \left (\mathbf x_{n} - \mathbf x_{n-1} \right )^T 
-\left [\nabla F (\mathbf x_{n}) - \nabla F (\mathbf x_{n-1}) \right ] \right |}
-{\left \|\nabla F(\mathbf{x}_{n}) - \nabla F(\mathbf{x}_{n-1}) \right \|^2}$$
-```
-
-renders as
-
-$$\gamma_{n} = \frac{ \left | \left (\mathbf x_{n} - \mathbf x_{n-1} \right )^T \left [\nabla F (\mathbf x_{n}) - \nabla F (\mathbf x_{n-1}) \right ] \right |}{\left \|\nabla F(\mathbf{x}_{n}) - \nabla F(\mathbf{x}_{n-1}) \right \|^2}$$
-
-Example **inline math** `$\nabla F(\mathbf{x}_{n})$` renders as $\nabla F(\mathbf{x}_{n})$.
-
-Example **multi-line math** using the `\\\\` math linebreak:
-
-```latex
-$$f(k;p_{0}^{*}) = \begin{cases}p_{0}^{*} & \text{if }k=1, \\\\
-1-p_{0}^{*} & \text{if }k=0.\end{cases}$$
-```
-
-renders as
-
-$$f(k;p_{0}^{*}) = \begin{cases}p_{0}^{*} & \text{if }k=1, \\\\
-1-p_{0}^{*} & \text{if }k=0.\end{cases}$$
 
 ## References
 Borenstein, M. & Hedges, L. V. (2019). Effect sizes for meta-analysis. In H. Cooper, L. V. Hedges, & J. C. Valentine (Eds.), _The handbook of research synthesis and meta-analysis_ (3rd ed., pp. 207–244). New York, NY: Russell Sage Foundation.
