@@ -13,3 +13,6 @@ main:
   - name: Contact
     url: '#contact'
     weight: 3
+  - name: Disclaimer
+    url: '#disclaim'
+    weight: 4
