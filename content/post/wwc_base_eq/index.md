@@ -119,7 +119,7 @@ if (model == 't') {
   }
 ```
 
-The last piece of code summarizes data when the variable of interest is binary. These steps are generally the same, though a logistic regression is conducted for obtaining an inferential assessment of the difference, the formula for the standard deviation of a binary variable is used, and the formula for the effect size (the Cox index) makes use of the logistic regression coefficient (Sanchez-Meca et al., 2003).
+The last piece of code summarizes data when the variable of interest is binary. These steps are generally the same, though a logistic regression is conducted for obtaining an inferential assessment of the difference, the formula for the standard deviation of a binary variable is used, and the formula for the effect size (the Cox's _d_ index) makes use of the logistic regression coefficient (Sanchez-Meca et al., 2003).
 
 ```r
   if (model == 'l') {
@@ -165,6 +165,7 @@ be_eq(in_dat=be_dat, dv="c2", iv="tx_a", model="l")
   covar ct_n ct_mn ct_sd tx_n tx_mn tx_sd cox_d     base_eq wchi_val wchi_df wchi_pval
 1    c2   50  0.46 0.498   50  0.56 0.496 0.241 Stat Adjust    0.997       1     0.318
 ```
+The WWC provides an online <a href="https://ies.ed.gov/ncee/wwc/wwcsrgpublic">Study Review Guide</a> (SRG) where baseline equivalence can be calculated. I wrote the function above to eliminate data entry errors when engaging in exploratory modeling and analyses. Sometimes, as a research team, there will be interest in exploring  covariates not included in WWC review protocols. If the list of covariates is large, or analytic samples may change, using a programmatic way to explore imbalance will increase analytic efficiency.
 
 ## References
 Borenstein, M. & Hedges, L. V. (2019). Effect sizes for meta-analysis. In H. Cooper, L. V. Hedges, & J. C. Valentine (Eds.), _The handbook of research synthesis and meta-analysis_ (3rd ed., pp. 207–244). New York, NY: Russell Sage Foundation.
