@@ -8,7 +8,7 @@ main:
     url: '#about'
     weight: 1
   - name: Blog posts
-    url: '#posts'
+    url: 'posts/'
     weight: 2
   - name: Disclaimer
     url: 'disclaim/'
