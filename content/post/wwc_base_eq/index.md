@@ -178,6 +178,8 @@ The WWC provides an online <a href="https://ies.ed.gov/ncee/wwc/wwcsrgpublic">St
 Work in SAS? Here is a link to a SAS macro for calculating baseline equivalence:
 <a href="../../static/sas_base_eq.sas">sas_base_eq</a>
 
+here("static", "sas_base_eq.sas.csv")
+
 Here is a link to the simulated data file:
 <a href="../../static/be_eq_data.xlsx">be_eq_data</a>
 
