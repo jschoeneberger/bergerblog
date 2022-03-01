@@ -1,10 +1,17 @@
 ---
-date: "2022-28-02"
-diagram: true
-highlight: true
-math: true
-title: Assessing Baseline Equivalence Using What Works Clearinghouse Standards
-tags: ["RCT", "WWC", "What Works Clearinghouse", "random assignment", "baseline equivalence", "causal inference", "covariate balance"]
+title: "Assessing Baseline Equivalence Using What Works Clearinghouse Standards"
+diagram: yes
+date: '2022-28-02'
+math: yes
+highlight: yes
+tags:
+- RCT
+- WWC
+- What Works Clearinghouse
+- random assignment
+- baseline equivalence
+- causal inference
+- covariate balance
 ---
 
 Research studies using random assignment are considered the "gold standard" because they yield balance on both observed and unobserved covariates between treatment groups. A small conceptual detail that is often left behind, however is that this balance is achieved _in expectation_. The reality is that imbalance among covariates between groups, sometimes called unhappy randomization, occurs more frequently than we'd like to admit. In fact, it occurs frequently enough that methodologists have developed methods for _re_-randomizing to achieve covariate balance (see Morgan & Rubin, 2012; 2015).
@@ -166,6 +173,13 @@ be_eq(in_dat=be_dat, dv="c2", iv="tx_a", model="l")
 1    c2   50  0.46 0.498   50  0.56 0.496 0.241 Stat Adjust    0.997       1     0.318
 ```
 The WWC provides an online <a href="https://ies.ed.gov/ncee/wwc/wwcsrgpublic">Study Review Guide</a> (SRG) where baseline equivalence can be calculated. I wrote the function above to eliminate data entry errors when engaging in exploratory modeling and analyses. Sometimes, as a research team, there will be interest in exploring  covariates not included in WWC review protocols. If the list of covariates is large, or analytic samples may change, using a programmatic way to explore imbalance will increase analytic efficiency.
+
+### Other Software
+Work in SAS? Here is a link to a SAS macro for calculating baseline equivalence:
+<a href="../../static/sas_base_eq.sas">sas_base_eq</a>
+
+Here is a link to the simulated data file:
+<a href="../../static/be_eq_data.xlsx">be_eq_data</a>
 
 ## References
 Borenstein, M. & Hedges, L. V. (2019). Effect sizes for meta-analysis. In H. Cooper, L. V. Hedges, & J. C. Valentine (Eds.), _The handbook of research synthesis and meta-analysis_ (3rd ed., pp. 207–244). New York, NY: Russell Sage Foundation.
