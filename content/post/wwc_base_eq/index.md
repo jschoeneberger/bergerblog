@@ -178,9 +178,10 @@ The WWC provides an online <a href="https://ies.ed.gov/ncee/wwc/wwcsrgpublic">St
 Work in SAS? Here is a link to a SAS macro for calculating baseline equivalence:
 [sas_base_eq](/sas_base_eq.sas)
 
-
 Here is a link to the simulated data file:
 [be_eq_data](/be_eq_data.xlsx)
+
+Any Stata or SPSS users...feel free to develop similar code and I'll post and acknowledge you!
 
 ## References
 Borenstein, M. & Hedges, L. V. (2019). Effect sizes for meta-analysis. In H. Cooper, L. V. Hedges, & J. C. Valentine (Eds.), _The handbook of research synthesis and meta-analysis_ (3rd ed., pp. 207–244). New York, NY: Russell Sage Foundation.
