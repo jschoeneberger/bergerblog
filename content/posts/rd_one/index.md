@@ -93,7 +93,7 @@ With our appropriately scaled and centered assignment variable, we can plot the 
 
 ```r
 #generate plot
-raw_plot <- ggplot(rd_dat, aes(x = run_z_c, y = Y, color = tx_a)) + 
+ggplot(rd_dat, aes(x = run_z_c, y = Y, color = tx_a)) + 
   geom_point(size=2,alpha = 0.25) + 
   geom_smooth(aes(fill = tx_a), method = "loess") + 
   geom_vline(xintercept = 0, linetype = "dashed", color="black", linewidth=1) +
@@ -102,8 +102,10 @@ raw_plot <- ggplot(rd_dat, aes(x = run_z_c, y = Y, color = tx_a)) +
   scale_x_continuous(limits = c(-ceiling(max(abs(rd_dat$run_z_c))),  ceiling(max(abs(rd_dat$run_z_c))))) +
   scale_y_continuous(limits = c(-ceiling(max(abs(rd_dat$Y))), ceiling(max(abs(rd_dat$Y))))) +
   scale_color_brewer(palette="Set1", direction=-1) + scale_fill_brewer(palette="Set1", direction=-1)
-raw_plot
 ```
+
+![](/images/rd_raw_plot.png)
+
 Note the code above automatically sets the limits for the X and Y axes, colors the data according to the value of the _tx_a_ variable, and includes a smooth loess curve for reference. Based on the raw data, it appears there is a discontinuity at the cut-point of zero, as the red (treatment) line intersects the dashed cut-point line at a point higher on the Y-axis than does the blue (control) line. 
 
 
