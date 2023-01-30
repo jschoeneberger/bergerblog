@@ -89,6 +89,8 @@ Below is a snapshot of the rd_dat data file displaying data for site 1, sorted i
 
 ![](/images/rd_run_z_c.png)
 
+## Raw Data Scatterplot
+
 With our appropriately scaled and centered assignment variable, we can plot the raw data to see the basic relationship between the assignment variable and our outcome _Y_.
 
 ```r
@@ -108,6 +110,9 @@ ggplot(rd_dat, aes(x = run_z_c, y = Y, color = tx_a)) +
 
 Note the code above automatically sets the limits for the X and Y axes, colors the data according to the value of the _tx_a_ variable, and includes a smooth loess curve for reference. Based on the raw data, it appears there is a discontinuity at the cut-point of zero, as the red (treatment) line intersects the dashed cut-point line at a point higher on the Y-axis than does the blue (control) line. 
 
+## Smoothing To Detect Discontinuities
+
+Though the scatterplot shown above seems to show a pretty clear discontinuity, this may not always be the case. Effectively, the raw data are binned into intervals along the assignment variable continuum. These bins can take various forms, including quantile-spaced (QS) and evenly-spaced (ES) bins. QS bins contain the same number of observations in each bin. ES bins are equal in length along the assignment score continuum. There are also two methods for determining the number of bins: integrated mean-squared error (IMSE) and mimicking variance (MV). The former is an asymptotic approximation of the MSE resulting from approximating individual data points with a constant, the latter chooses binned means yielding variability similar to that seen in the raw data. 
 
 #### Baseline Equivalence Function
 
