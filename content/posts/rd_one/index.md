@@ -112,7 +112,175 @@ Note the code above automatically sets the limits for the X and Y axes, colors t
 
 ## Smoothing To Detect Discontinuities
 
-Though the scatterplot shown above seems to show a pretty clear discontinuity, this may not always be the case. Effectively, the raw data are binned into intervals along the assignment variable continuum. These bins can take various forms, including quantile-spaced (QS) and evenly-spaced (ES) bins. QS bins contain the same number of observations in each bin. ES bins are equal in length along the assignment score continuum. There are also two methods for determining the number of bins: integrated mean-squared error (IMSE) and mimicking variance (MV). The former is an asymptotic approximation of the MSE resulting from approximating individual data points with a constant, the latter chooses binned means yielding variability similar to that seen in the raw data. 
+Though the scatterplot shown above seems to show a pretty clear discontinuity, this may not always be the case. To enhance our ability to detect the overall pattern in the data (i.e., the likely regression form and discontinuities), the data can be 'smoothed'. Effectively, the raw data are binned into intervals along the assignment variable continuum. These bins can take various forms, including quantile-spaced (QS) and evenly-spaced (ES) bins. QS bins contain the same number of observations in each bin. ES bins are equal in length along the assignment score continuum. There are also two methods for determining the number of bins: integrated mean-squared error (IMSE) and mimicking variance (MV). The former is an asymptotic approximation of the MSE resulting from approximating individual data points with a constant, the latter chooses binned means yielding variability similar to that seen in the raw data. 
+
+I've written a function to compile information about various bins for inspection. We begin by setting an object equal to available covariates that can eventually be used in the RD estimation process. We also set up lists of features that we wish to explore using RDPLOT, including the selection method, kernel (weighting) type, and polynomials. 
+
+```
+#set up z = covariates 
+z = cbind(rd_dat$C1, rd_dat$C2)
+
+#create lists of features we wish to explore using RDPLOT
+#here we specify the selection method, kernel and polynomials
+sel_lst <- c("esmv","qsmv","es","qs")
+krn_lst <- c("uniform","triangular")
+p_lst <- c(1,4)
+all_lst <- expand.grid(sel_lst, krn_lst, p_lst)
+```
+
+Now we define the function that makes use of <a href="https://search.r-project.org/CRAN/refmans/rdrobust/html/rdplot.html/">RDPLOT</a>, a function for plotting data-driven RD plots. When executed, a separate plot will be generated for each combination of method, kernel and p (polynomial).
+
+```
+#bins_id is a function to compile identified bin numbers based on various specifications
+if(exists("bins_id")) rm("bins_id", envir = globalenv())
+bins_id <- do.call(rbind.data.frame,
+            with(all_lst, Map(function(bin_sel, krn, p, dat, x, y, cut, n_bin) {
+              floor_dec <- function(x, level=1) round(x - 5*10^(-level-1), level)
+              ceiling_dec <- function(x, level=1) round(x + 5*10^(-level-1), level)
+              x_lo <- floor_dec(min(dat[[x]]), 1)
+              x_hi <- ceiling_dec(max(dat[[x]]), 1)
+              x_lim <- max(abs(x_lo), abs(x_hi))
+              y_lo <- floor_dec(min(dat[[y]]), 1)
+              y_hi <- ceiling_dec(max(dat[[y]]), 1)
+              y_lim <- max(abs(y_lo), abs(y_hi))
+            
+              #if(length(bin_sel) == 0) { print(bin_sel) } else { print(krn) }
+              if(length(n_bin) > 0){ #this rdplot call runs when the number of bins is not specified
+                  out_put <- rdplot(x = dat[[x]], y = dat[[y]], c = cut, binselect = bin_sel, kernel=krn, p=p, 
+                                    x.lim = c(-x_lim,x_lim), y.lim = c(-y_lim,y_lim),
+                                    title=paste0("Method=",bin_sel, " / Kernel=",krn, " / P=",p), 
+                                    x.label=x, y.label=y, masspoints="adjust", covs=z )
+              }
+              else{ #this rdplot call runs when the number of bins is specified
+                  out_put <- rdplot(x = dat[[x]], y = dat[[y]], c = cut, binselect = bin_sel, kernel=krn, nbins = c(n_bin),
+                                        x.lim = c(-x_lim,x_lim), y.lim = c(-y_lim,y_lim),
+                                        title=paste0("Method=",bin_sel, " / Kernel=",krn, " / P=",p), 
+                                        x.label=x,y.label=y, masspoints="adjust", covs=z )
+              }
+              #compile results
+              out_sum <- as.data.frame(cbind(method=paste0(bin_sel), kernel=paste0(krn), p=paste0(p),
+                                                   imse_l=out_put$J_IMSE[1], imse_r=out_put$J_IMSE[2], mv_l=out_put$J_MV[1], mv_r=out_put$J_MV[2],
+                                                   mn_bin_len_l=round(out_put$bin_avg[1],3), mn_bin_len_r=round(out_put$bin_avg[2],3),
+                                                   md_bin_len_l=round(out_put$bin_med[1],3), md_bin_len_r=round(out_put$bin_med[2],3)))
+              return(out_sum)
+}, Var1, Var2, Var3, dat=list(rd_dat), x=list("run_z_c"), y=list("Y"), cut=list(0), n_bin=list(0))) )
+```
+Once the resulting data frame is generated, I subset to focus on those where p=4 (i.e., the global polynomial used to approximate the mean functions on either side of the cut-off).
+```
+#create file to print: remember, p is about the graph polynomial
+bin_prt <- bins_id %>% filter(p==4) %>% 
+  mutate(left_n = case_when(method %in% c("esmv","qsmv") ~ mv_l, TRUE ~ imse_l), 
+         rght_n = case_when(method %in% c("esmv","qsmv") ~ mv_r, TRUE ~ imse_r)) %>%
+  dplyr::select(method,kernel,p,left_n,rght_n,mn_bin_len_l,mn_bin_len_r,md_bin_len_l,md_bin_len_r)
+bin_prt
+```
+As we can see below, we get a summary table displaying the number of bins, the mean and the median bin lengths on each side of the cut-off. Note how ES-based bins have the same mean and median lengths on either side, while QS-based bins are different. 
+
+![](/images/rd_bin_id.png)
+
+Assume we wish to proceed looking only at plots where the polynomial is 4 (i.e, p=4), but we'd like to show nicely formatted plots for inclusion in a report. I've compiled another function to make a plot with a bit more formatting. The function takes an output object from RDPLOT, as well as arguments represeting the raw data, the X and Y variables, and their corresponding labels and break-points for plotting on the axes.  
+```
+##pretty bin plot function - this should be presented first as a display of raw data
+rd_col_plot = function(in_data, cut, rawdat, xvar, xlab, yvar, ylab, xbrk, ybrk){
+  c = cut
+  x_plot = in_data$vars_poly[,"rdplot_x"]
+  y_hat  = in_data$vars_poly[,"rdplot_y"]
+  x_plot_r=x_plot[x_plot>=c]
+  x_plot_l=x_plot[x_plot<c]
+  num_bin_l <- in_data$vars_bins %>% filter(rdplot_mean_bin < 0) %>% summarise(n=n())
+  num_bin_r <- in_data$vars_bins %>% filter(rdplot_mean_bin >= 0) %>% summarise(n=n())
+  rd_tx = c(rep("TX",nrow(data.frame(x_plot_l))), rep("CT",nrow(data.frame(x_plot_r))))
+  rd_tx = data.frame(rd_tx)
+  rd_line_data <- data.frame(x_plot,y_hat,rd_tx)
+  rd_line_data$id <- seq.int(nrow(rd_line_data))
+  rdplot_mean_bin = in_data$vars_bins[,"rdplot_mean_bin"]
+  rdplot_mean_bin <- data.frame(rdplot_mean_bin)
+  rdplot_mean_bin$id <- seq.int(nrow(rdplot_mean_bin))
+  rdplot_mean_y   = in_data$vars_bins[,"rdplot_mean_y"]
+  #rdplot_mean_y[is.nan(rdplot_mean_y)] <- 0
+  rdplot_mean_y <- data.frame(rdplot_mean_y)
+  rdplot_mean_y$id <- seq.int(nrow(rdplot_mean_y))
+  rd_dot_color  = data.frame(c(rep("TX",num_bin_l),rep("CT",num_bin_r)))
+  rd_dot_color$id <- seq.int(nrow(rd_dot_color))
+  colnames(rd_dot_color) <- c("rd_dot_color", "id")
+  rd_line_data <-  rd_line_data %>% left_join(rdplot_mean_bin, by = "id") %>% 
+    left_join(rdplot_mean_y, by = "id") %>% 
+    left_join(rd_dot_color, by = "id")
+  
+  floor_dec <- function(x, level=1) round(x - 5*10^(-level-1), level)
+  ceiling_dec <- function(x, level=1) round(x + 5*10^(-level-1), level)
+  x_lo <- floor(floor_dec(min(rawdat[[xvar]], na.rm=T), 1)*2)/2
+  x_hi <- ceiling(ceiling_dec(max(rawdat[[xvar]], na.rm=T), 1)*2)/2
+  x_lim <- max(abs(x_lo), abs(x_hi))
+  y_lo <- floor_dec(min(rawdat[[xvar]]), 1)
+  y_hi <- ceiling_dec(max(rawdat[[xvar]]), 1)
+  y_lim <- max(abs(y_lo), abs(y_hi))
+  
+  temp_plot <- ggplot(rd_line_data, aes(color=rd_tx)) + 
+    geom_point(aes(x = rdplot_mean_bin, y = rdplot_mean_y, color=rd_dot_color, shape=rd_dot_color), size=2, show.legend = FALSE, na.rm = TRUE) +
+    geom_line(aes(x = x_plot, y = y_hat), size=1, na.rm = TRUE) + 
+    labs(x = xlab, y = ylab, col="Treatment", shape="Treatment") + 
+    geom_vline(xintercept = c, linetype = "solid", color="black", linewidth=1) +
+    theme_classic() + 
+    scale_color_brewer(palette="Set1", direction=-1, na.translate = F) +
+    scale_x_continuous(limits=c(-x_lim, x_lim), breaks=xbrk) +
+    scale_y_continuous(limits=c(-y_lim, y_lim), breaks=ybrk) 
+  #print(temp_plot)
+  return(rd_line_data)	
+}
+```
+Making use of the selection method list defined above, we can use a custom function to generate the RDPLOT output object. Note I have included 'hide=T' to suppress printing the plot itself.    
+```
+#use the selection method list defined above to generate the require output objects
+plt_func <- function(bin_sel, dat, x, y, krn, p, cut) {
+  out_put <- rdplot(x = dat[[x]], y = dat[[y]], c = cut, binselect = bin_sel, kernel=krn, p=p, 
+                    x.lim = c(-x_lim,x_lim), y.lim = c(-y_lim,y_lim),
+                    title=paste0("Method=",bin_sel, " / Kernel=",krn, " / P=",p), 
+                    x.label=x, y.label=y, masspoints="adjust", covs=z, hide=T )
+  return(out_put)
+}
+```
+The call to the function refers to the selection list and specified a triangular kernel and polynomial of 4. This yields a resulting object list (rd_plt_out) containing the results for each of the four selection methods.
+```
+rd_plt_out <- lapply(sel_lst, plt_func, dat=rd_dat, x="run_z_c", y="Y", krn="triangular", p=4, cut=0)
+```
+Using this object as input to the fancier plot function I crafted, we can generate another output object for the 'nice' plots (rd_ncplt_out).
+```
+rd_ncplt_out <- lapply(rd_plt_out, rd_col_plot, cut=0, rawdat=rd_dat, xvar='run_z_c', xlab='Centered Z-Score', yvar='Y', ylab='Y',  
+                  xbrk=c(-4,-3, -2, -1, 0, 1, 2, 3, 4), ybrk=c(-4,-3, -2, -1, 0, 1, 2, 3, 4) )
+
+```
+Now we edit the resulting list output object to create labels of each selection method and spacing to be used as as a facet in out facet plot. Note the list is in the order of the specified methods list specified above.
+```
+#edit the nice object to label the output for each selection method
+fac_dat <- lapply(rd_ncplt_out, as.data.frame) %>% bind_rows(.id = "id") %>% 
+  mutate(bin_type = case_when(id == 1 ~ "MV", id == 2 ~ "MV", id == 3 ~ "IMSE", id == 4 ~ "IMSE"),
+         spacing = case_when(id == 1 ~ "ES", id == 2 ~ "QS", id == 3 ~ "ES", id == 4 ~ "QS"))
+```
+We then submit this data to a GGPLOT call with bin selection type as rows and spacing as columns.
+```
+#facet plot of graphs
+fac_plot <- ggplot(fac_dat, aes(color=rd_tx)) + 
+  geom_point(aes(x = rdplot_mean_bin, y = rdplot_mean_y, color=rd_dot_color, shape=rd_dot_color), size=2, show.legend = FALSE, na.rm = TRUE) +
+  geom_line(aes(x = x_plot, y = y_hat), size=1, na.rm = TRUE) + 
+  labs(x = 'Centered Z-Score', y = 'Y', col="Treatment", shape="Treatment") + 
+  geom_vline(xintercept = 0, linetype = "solid", color="black", linewidth=1) +
+  theme_classic() + 
+  scale_color_brewer(palette="Set1", direction=-1, na.translate = F) +
+  scale_x_continuous(limits=c(-x_lim, x_lim), breaks=c(-4,-3, -2, -1, 0, 1, 2, 3, 4)) +
+  scale_y_continuous(limits=c(-y_lim, y_lim), breaks=c(-4,-3, -2, -1, 0, 1, 2, 3, 4)) + 
+  facet_grid(rows = vars(bin_type), cols = vars(spacing)) + 
+  theme(panel.background = element_rect(fill = NA, color = "black"), legend.position="bottom",
+        axis.text=element_text(size=13), axis.title=element_text(size=13),
+        legend.text=element_text(size=13), legend.title=element_text(size=13),
+        strip.text.x = element_text(size=13), strip.text.y = element_text(size=13) )
+print(fac_plot)
+```
+As we can see in the plot below, we get four quadrants representing the bin plots by bin selection method and spacing method. Note how the ES-based plots appear to have a bit more variability across the bins, while the QS are more clustered toward the cut-score. Regardless of methods, each plot seems to suggest an advantage for the treatment group (i.e., an intersection at the cut-point for the treatment group that is higher than the intersection for the control group).
+
+![](/images/rd_bin_fac_plot.png) 
+
+
 
 #### Baseline Equivalence Function
 
