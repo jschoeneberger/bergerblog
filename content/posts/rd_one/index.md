@@ -89,6 +89,13 @@ Below is a snapshot of the rd_dat data file displaying data for site 1, sorted i
 
 ![](/images/rd_run_z_c.png)
 
+We also go ahead and create dummy variables to represent the individual sites (so we can include these in our covariate object):
+```
+#create dummy variables representing site
+rd_dat <- rd_dat %>% mutate(s1_dum = case_when (site == 1 ~ 1, site != 1 ~ 0),
+                            s2_dum = case_when (site == 2 ~ 1, site != 2 ~ 0),
+                            s3_dum = case_when (site == 3 ~ 1, site != 3 ~ 0))
+```
 ## Raw Data Scatterplot
 
 With our appropriately scaled and centered assignment variable, we can plot the raw data to see the basic relationship between the assignment variable and our outcome _Y_.
@@ -118,7 +125,7 @@ I've written a function to compile information about various bins for inspection
 
 ```
 #set up z = covariates 
-z = cbind(rd_dat$C1, rd_dat$C2)
+z = cbind(rd_dat$C1, rd_dat$C2, rd_dat$s1_dum, rd_dat$s2_dum, rd_dat$s3_dum)
 
 #create lists of features we wish to explore using RDPLOT
 #here we specify the selection method, kernel and polynomials
@@ -280,7 +287,43 @@ As we can see in the plot below, we get four quadrants representing the bin plot
 
 ![](/images/rd_bin_fac_plot.png) 
 
+## Generating RD Estimates
+Having examined the raw data and the smoothed data via the faceted bin plot, we should have a pretty good idea of (a) whether a discontinuity is likely to be present and (b) some ideas about the actual functional form of the local regressions on either side of the cut-off. One other piece of information we should have in hand before turning to <a href="https://rdpackages.github.io/rdrobust/">RDROBUST</a> for estimation is whether we truly have a running/assignment score continuum of unique data points. RDROBUST contains an adjustment function (masspoints) for when a completely unique continuum is not available. Here is the code i used to check for masspoints.
+```
+#determine whether masspoints existing in running variable
+#should be done on the analytic sample: no missing data on running variable, covariates or outcome
+rv_u <- rd_dat %>% ungroup() %>% dplyr::select(site, tx_a, run_z_c) %>% group_by(site, tx_a, run_z_c) %>% 
+  mutate(masspoints=n()) %>% distinct() %>% filter(masspoints > 1) %>% ungroup() %>% 
+  dplyr::select(site, tx_a) %>% group_by(site, tx_a) %>% mutate(masspoint_n = n())
+print(rv_u)
+```
+With the current data, there are no masspoints found. The code is set up to generate a summary of the number of running score values for both groups on either side of the cut-off that are not unique. Here is some code that duplicates one score in our data and prints a result:
+```
+  #fictitious sample where data is edited
+  fake <- rd_dat %>% mutate(run_z_c = case_when(row_id==3 ~ round(0.33868,5), TRUE ~ round(run_z_c,5)))
+  rv_u <- fake %>% filter(row_id <= 3) %>% ungroup() %>% dplyr::select(site, tx_a, run_z_c) %>% 
+    group_by(site, tx_a, run_z_c) %>% 
+    mutate(masspoints=n()) %>% distinct() %>% filter(masspoints > 1) %>% ungroup() %>% 
+    dplyr::select(site, tx_a) %>% group_by(site, tx_a) %>% mutate(masspoint_n = n())
+  print(rv_u)
+```
+![](/images/rd_fake_masspt.png) 
 
+Given we do not have any masspoints, we can forego using that command option within RDROBUST during estimation. The following code will execute an analysis of our RD data. We specify _run_z_c_ as our assignment variable, _Y_ as our dependent variable, a cut-score of zero, the data-driven bandwidth selection procedure of MSETWO (so we allow for separate bandwidths on either side of the cut-score), a triangular kernel weight, a linear specification (p=1) using the covariates we assigned to object _z_. The "all=TRUE" option tells RDROBUST to report all the types of estimates and standard errors (see the RDROBUST documentation). See Cattaneo, Idrobo & Titiunik (2020) for recommendations on when to use separate bandwidths, kernel functions, and regression function specifications (i.e., p=1).
+
+```
+rd_est = rdrobust(x=rd_dat$run_z_c, y=rd_dat$Y, c=0, bwselect="msetwo", kernel="triangular", p=1, covs=z,     masspoints="off", all=TRUE)
+summary(rd_est)
+```
+First, we notice that our data-driven bandwidth selection procedure yielded different boundaries on either side (0.937 to the left of the cut-score, 0.770 to the right), resulting in 196 and 160 units falling within our bandwidth, respectively (and wider for the bias-corrected bandwidths). We also see in the summary estimate table at the bottom of the output that all estimates are negative and significant. Why are we obtaining negative estimates despite the graphical evidence presented previously showing a positive effect for treatment group? It is important to know that RDROBUST is parameterized to assume that the intervention group of interest falls _ABOVE_ the cut-score. Thus, these results are showing that the comparison group has a significantly negative effect relative to the treatment group.
+
+![](/images/rd_est.png)
+
+We can take these results and create a nice plot that shows the estimated lines on each side of the cut-score over the raw data points falling inside the bandwidth. The following custom function will create this plot, utilizing the rd_est object created above and the raw data as input. Note that aspects of this function can be customized for particular needs, including labels of the intervention groups, colors, axis labels, etc. 
+
+We can see the positive effect assocaited with the intervention group, as well as the raw data points for each group on either side of the cut-off. I have also included the code to annotate the plot with the estimate, p-value and confidence interval. Be sure to adapt these features if you want to change the location of the annotation or report the robust, bias-corrected versions of the estimate, p-value or confidence intervals. 
+
+![](/images/rd_est_plot.png)
 
 #### Baseline Equivalence Function
 
