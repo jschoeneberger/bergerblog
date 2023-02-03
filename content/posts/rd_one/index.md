@@ -334,31 +334,34 @@ Here is a link to the simulated data file:
 
 
 ## References
-Angrist, J., & Lavy, V. (1999). Using Maimonides’ rule to estimate the effect of class size on student achievement. _Quarterly Journal of Economics 114, May_, 535-575. DOI: <a href="https://www.jstor.org/stable/2587016"</a>
+Angrist, J., & Lavy, V. (1999). Using Maimonides’ rule to estimate the effect of class size on student achievement. _Quarterly Journal of Economics 114, May_, 535-575. DOI: <a href="https://doi.org/10.1162/003355399556061">10.1162/003355399556061</a>
 
 Cattaneo, M. D., Idrobo, N., and Titiunik, R. (2018a). _A Practical Introduction to Regression Discontinuity Designs: Volume I, Cambridge Elements: Quantitative and Computational Methods for Social Science_. Cambridge University Press.
 
 Cattaneo, M. D., Idrobo, N., and Titiunik, R. (2018b). _A Practical Introduction to Regression Discontinuity Designs: Volume I, Cambridge Elements: Quantitative and Computational Methods for Social Science_. Cambridge University Press.
 
-Cattaneo, M. D., Titiunik, R., Vazquez-Bare, G., & Keele, L. (2016). Interpreting regression discontinuity designs with multiple cutoffs. _The Journal of Politics, 78(4)_, 1229–1248. DOI: <a href="https://www.journals.uchicago.edu/doi/abs/10.1086/686802"</a>
+Cattaneo, M. D., Titiunik, R., Vazquez-Bare, G., & Keele, L. (2016). Interpreting regression discontinuity designs with multiple cutoffs. _The Journal of Politics, 78(4)_, 1229–1248. DOI: <a href="https://www.journals.uchicago.edu/doi/abs/10.1086/686802">10.1086/686802</a>
 
-Cook, T. D., W. R. Shadish, and V. C. Wong. 2008. Three Conditions Under Which Experiments and Observational Studies Produce Comparable Causal Estimates: New Findings from Within-Study Comparisons. _Journal of Policy Analysis and Management 27, 4_, 724-750. DOI:<a href="https://doi.org/10.1002/pam.20375"</a>
+Cook, T. D., W. R. Shadish, and V. C. Wong. 2008. Three Conditions Under Which Experiments and Observational Studies Produce Comparable Causal Estimates: New Findings from Within-Study Comparisons. _Journal of Policy Analysis and Management 27, 4_, 724-750. DOI: <a href="https://doi.org/10.1002/pam.20375">10.1002/pam.20375</a>
 
-Hahn, J., P. Todd, and W. van de Klaauw. (1999). Evaluating the Effect of an Antidiscrimination Law Using a Regression-Discontinuity Design (_NBER Working Paper 7131_). Cambridge, MA: National Bureau of Economic Research. DOI:<a href="https://doi.org/10.3386/w7131"</a>
+Hahn, J., P. Todd, and W. van de Klaauw. (1999). Evaluating the Effect of an Antidiscrimination Law Using a Regression-Discontinuity Design (_NBER Working Paper 7131_). Cambridge, MA: National Bureau of Economic Research. DOI: <a href="https://doi.org/10.3386/w7131">10.3386/w7131</a>
 
 Hitt, D. H., Robinson, W., & Player, D. (2018). _District readiness to support school turnaround: A guide for state education agencies and districts, 2nd edition_. [The Center on School Turnaround at WestEd]. San Francisco, CA: WestEd.
 
 Imbens, G. W. & Kalyanaraman, K. (2009). Optimal Bandwidth Choice for the Regression Discontinuity Estimator. (Unpublished working paper).
 
-Imbens, G. W., & Lemieux, T. (Eds.). (2008a). The regression discontinuity design: Theory and applications [Special issue]. _Journal of Econometrics, 142(2)_. DOI:<a href="https://doi.org/10.1016/j.jeconom.2007.05.008"</a>
+Imbens, G. W., & Lemieux, T. (Eds.). (2008a). The regression discontinuity design: Theory and applications [Special issue]. _Journal of Econometrics, 142(2)_. DOI: <a href="https://doi.org/10.1016/j.jeconom.2007.05.008">10.1016/j.jeconom.2007.05.008</a>
 
-Jacob, B., & Lefgren, L. (2004a). Remedial education and student achievement: A regression-discontinuity analysis. _Review of Economics and Statistics, LXXXVI_, 226–244. DOI:<a href="https://doi.org/10.3386/w8918"</a>
+Jacob, B., & Lefgren, L. (2004a). Remedial education and student achievement: A regression-discontinuity analysis. _Review of Economics and Statistics, LXXXVI_, 226–244. DOI: <a href="https://doi.org/10.3386/w8918">10.3386/w8918</a>
 
-Ludwig, J., & Miller, D. L. (2007). Does Head Start improve children’s life chances? Evidence from a regression discontinuity design. _The Quarterly Journal of Economics, 122(1)_, 159–208. DOI:<a href="https://doi.org/10.1162/qjec.122.1.159"</a>
+Ludwig, J., & Miller, D. L. (2007). Does Head Start improve children’s life chances? Evidence from a regression discontinuity design. _The Quarterly Journal of Economics, 122(1)_, 159–208. DOI: <a href="https://doi.org/10.1162/qjec.122.1.159">10.1162/qjec.122.1.159</a>
 
 Shadish, W. R., T. D. Cook, and D. T. Campbell. (2002). _Experimental and Non-Experimental Designs for Generalized Causal Inference_. Boston: Houghton Mifflin.
 
 The Center on School Turnaround. (2017). _Four domains for rapid school improvement: A systems framework_ [The Center for School Turnaround at WestEd]. San Francisco, CA: WestEd.
 
-Thistlethwaite, D. & D. Campbell. (1960). Regression-Discontinuity Analysis: An Alternative to the Ex Post Facto Experiment. _Journal of Educational Psychology, 51_, 309-317. DOI:<a href="https://doi.org/10.1037/h0044319"</a>
+Thistlethwaite, D. & D. Campbell. (1960). Regression-Discontinuity Analysis: An Alternative to the Ex Post Facto Experiment. _Journal of Educational Psychology, 51_, 309-317. DOI: <a href="https://doi.org/10.1037/h0044319">10.1037/h0044319</a>
+
+
+
 
