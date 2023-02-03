@@ -20,7 +20,9 @@ Regression Discontinuity (RD or RDDs; Cattaneo, Idrobo & Titiunik, 2018a; 2018b;
 This series of posts was motivated by my work on the <a href="https://new.every1graduates.org/projects/alfalab/#:~:text=WHAT%20IS%20ALFA%20LAB%3F,significantly%20below%20grade%20level%20standards">
 Accelerating Literacy for Adolescents (ALFA) Lab </a> evaluation funded by the U.S Department of Education's <a href="https://ies.ed.gov/">Institute for Education Sciences' </a> (R305A180154). In collaboration with researchers from <a href="https://education.jhu.edu/">Johns Hopkins School of Education </a>, I developed a number of R functions and scripts to analyze RD-based outcomes. My intent is to share what I learned with others seeking to use an RD design in their work.
 
-This first post will showcase how we handled a multi-site RD design, where each site had a unique assignment variable (as presented at the <a href="https://www.eval.org/">American Evaluation Association</a> 2022 conference). The post will also provide sample code for exploratory RD plotting, impact estimation, and post-estimation RD plots. Additional posts will provide code for generating evidence aligned with href="https://ies.ed.gov/ncee/wwc/">What Works Clearinghouse (WWC)</a> href="https://ies.ed.gov/ncee/wwc/Docs/referenceresources/WWC-HandbookVer5.0AppIES-508.pdf">Standards 5.0</a> and will also explore mediation and moderation analyses within an RD design context. 
+This first post will showcase how we handled a multi-site RD design, where each site had a unique assignment variable (as presented at the <a href="https://www.eval.org/">American Evaluation Association</a> 2022 conference). The post will also provide sample code for exploratory RD plotting, impact estimation, and post-estimation RD plots. This post is not intended to serve as an exploration into all things RD-estimation, but rather to share some developed code to facilitate the analysis and presentation of RD design data using <a href="https://rdpackages.github.io/rdrobust/">RDROBUST</a> and its affiliated packages. Additional posts will provide code for generating evidence aligned with <a href="https://ies.ed.gov/ncee/wwc/">What Works Clearinghouse (WWC)</a> <a href="https://ies.ed.gov/ncee/wwc/Docs/referenceresources/WWC-HandbookVer5.0AppIES-508.pdf">Standards 5.0</a> and will also explore mediation and moderation analyses within an RD design context. 
+
+For those looking to learn more about RD estimation and explore more of the features associated with the various RD packages, consult the references listed as the end of this post.
 
 ## Preparing Multi-Site, Multi-Assignment Variable Data
 
@@ -71,7 +73,7 @@ N: 200
       C2   -0.05      0.99   -2.67     0.01    3.11
 ```
 
-The most important thing to take note of in this summary are the means of _X_, by site. Clearly, each site has a distinct assignment variable determining which units receive the intervention, and which do not. The WWC Standards 5.0 outlines two options for handling site-based RD estimates: pooling or aggregation. Pooling combines the raw data for analysis yielding a single estimate. Aggregation involves the generation of separate estimates and then computing a weighted average of the estimates. For our project, we chose to pool the raw data. To accomplish this, we standardized and centered the assignment variable. Centering can be done using the individual cut-scores identified prior to assignment. Here we automatically center using the largest value associated with treatment units (tx = 1):  
+The most important thing to take note of in this summary are the means of _X_, by site. Clearly, each site has a distinct assignment variable determining which units receive the intervention, and which do not. The WWC Standards 5.0 outlines two options for handling site-based RD estimates: pooling or aggregation. Pooling combines the raw data for analysis yielding a single estimate. Aggregation involves the generation of separate estimates and then computing a weighted average of the estimates. For our project, we chose to pool the raw data. To accomplish this, we standardized and centered the assignment variable. Centering can be done using the individual cut-scores identified prior to assignment (Cattaneo, Titiunik, Vazquez-Bare, & Keele, 2016). Here we automatically center using the largest value associated with treatment units (tx = 1):  
 
 ```r
 #standardize assignment score (z-score) by site
@@ -325,12 +327,6 @@ We can see the positive effect assocaited with the intervention group, as well a
 
 ![](/images/rd_est_plot.png)
 
-#### Baseline Equivalence Function
-
-We also calculate Hedges' _g_ (1981) with a bias correction for small sample sizes $\omega$ = [(1-3/(4*(tx_n+ct_n)-9))] (Borenstein & Hedges, 2019). 
-
-
-
 ### Other Software
 Here is a link to the simulated data file:
 [be_eq_data](/be_eq_data.xlsx)
@@ -338,13 +334,31 @@ Here is a link to the simulated data file:
 
 
 ## References
-Borenstein, M. & Hedges, L. V. (2019). Effect sizes for meta-analysis. In H. Cooper, L. V. Hedges, & J. C. Valentine (Eds.), _The handbook of research synthesis and meta-analysis_ (3rd ed., pp. 207–244). New York, NY: Russell Sage Foundation.
+Angrist, J., & Lavy, V. (1999). Using Maimonides’ rule to estimate the effect of class size on student achievement. _Quarterly Journal of Economics 114, May_, 535-575. DOI: <a href="https://www.jstor.org/stable/2587016"</a>
 
-Hedges, L. V. (1981). Distribution theory for Glass’s estimator of effect size and related estimators. _Journal of Educational and Behavioral Statistics, 6(2),_ 107–128. DOI: <a href="https://doi.org/10.3102/10769986006002107">10.3102/10769986006002107</a>
+Cattaneo, M. D., Idrobo, N., and Titiunik, R. (2018a). _A Practical Introduction to Regression Discontinuity Designs: Volume I, Cambridge Elements: Quantitative and Computational Methods for Social Science_. Cambridge University Press.
 
-Morgan, K.L. & Rubin, D.B. (2015). Rerandomization to Balance Tiers of Covariates. _Journal of the American Statistical Association (JASA), 110(512),_ 1412-1421. DOI: <a href="https://doi.org/10.1080/01621459.2015.1079528">10.1080/01621459.2015.1079528</a> 
+Cattaneo, M. D., Idrobo, N., and Titiunik, R. (2018b). _A Practical Introduction to Regression Discontinuity Designs: Volume I, Cambridge Elements: Quantitative and Computational Methods for Social Science_. Cambridge University Press.
 
-Morgan, K.L. & Rubin, D.B. (2012). Rerandomization to Improve Covariate Balance in Experiments. _Annals of Statistics, 40(2),_ 1262-1282. DOI: <a href="https://doi.org/10.1214/12-AOS1008">10.1214/12-AOS1008</a>
+Cattaneo, M. D., Titiunik, R., Vazquez-Bare, G., & Keele, L. (2016). Interpreting regression discontinuity designs with multiple cutoffs. _The Journal of Politics, 78(4)_, 1229–1248. DOI: <a href="https://www.journals.uchicago.edu/doi/abs/10.1086/686802"</a>
 
-Sanchez-Meca, J., Marin-Martinez, F., & Chacon-Moscoso, S. (2003). Effect-size indices for dichotomous outcomes in meta-analysis. _Psychological Methods, 8(4),_ 448–467. DOI: <a href="https://doi.org/10.1037/1082-989X.8.4.448">10.1037/1082-989X.8.4.448</a>
+Cook, T. D., W. R. Shadish, and V. C. Wong. 2008. Three Conditions Under Which Experiments and Observational Studies Produce Comparable Causal Estimates: New Findings from Within-Study Comparisons. _Journal of Policy Analysis and Management 27, 4_, 724-750. DOI:<a href="https://doi.org/10.1002/pam.20375"</a>
+
+Hahn, J., P. Todd, and W. van de Klaauw. (1999). Evaluating the Effect of an Antidiscrimination Law Using a Regression-Discontinuity Design (_NBER Working Paper 7131_). Cambridge, MA: National Bureau of Economic Research. DOI:<a href="https://doi.org/10.3386/w7131"</a>
+
+Hitt, D. H., Robinson, W., & Player, D. (2018). _District readiness to support school turnaround: A guide for state education agencies and districts, 2nd edition_. [The Center on School Turnaround at WestEd]. San Francisco, CA: WestEd.
+
+Imbens, G. W. & Kalyanaraman, K. (2009). Optimal Bandwidth Choice for the Regression Discontinuity Estimator. (Unpublished working paper).
+
+Imbens, G. W., & Lemieux, T. (Eds.). (2008a). The regression discontinuity design: Theory and applications [Special issue]. _Journal of Econometrics, 142(2)_. DOI:<a href="https://doi.org/10.1016/j.jeconom.2007.05.008"</a>
+
+Jacob, B., & Lefgren, L. (2004a). Remedial education and student achievement: A regression-discontinuity analysis. _Review of Economics and Statistics, LXXXVI_, 226–244. DOI:<a href="https://doi.org/10.3386/w8918"</a>
+
+Ludwig, J., & Miller, D. L. (2007). Does Head Start improve children’s life chances? Evidence from a regression discontinuity design. _The Quarterly Journal of Economics, 122(1)_, 159–208. DOI:<a href="https://doi.org/10.1162/qjec.122.1.159"</a>
+
+Shadish, W. R., T. D. Cook, and D. T. Campbell. (2002). _Experimental and Non-Experimental Designs for Generalized Causal Inference_. Boston: Houghton Mifflin.
+
+The Center on School Turnaround. (2017). _Four domains for rapid school improvement: A systems framework_ [The Center for School Turnaround at WestEd]. San Francisco, CA: WestEd.
+
+Thistlethwaite, D. & D. Campbell. (1960). Regression-Discontinuity Analysis: An Alternative to the Ex Post Facto Experiment. _Journal of Educational Psychology, 51_, 309-317. DOI:<a href="https://doi.org/10.1037/h0044319"</a>
 
