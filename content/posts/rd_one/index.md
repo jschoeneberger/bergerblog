@@ -323,10 +323,95 @@ First, we notice that our data-driven bandwidth selection procedure yielded diff
 
 We can take these results and create a nice plot that shows the estimated lines on each side of the cut-score over the raw data points falling inside the bandwidth. The following custom function will create this plot, utilizing the rd_est object created above and the raw data as input. Note that aspects of this function can be customized for particular needs, including labels of the intervention groups, colors, axis labels, etc. 
 
-We can see the positive effect assocaited with the intervention group, as well as the raw data points for each group on either side of the cut-off. I have also included the code to annotate the plot with the estimate, p-value and confidence interval. Be sure to adapt these features if you want to change the location of the annotation or report the robust, bias-corrected versions of the estimate, p-value or confidence intervals. 
+We can see the positive effect associated with the intervention group, as well as the raw data points for each group on either side of the cut-off. I have also included the code to annotate the plot with the estimate, p-value and confidence interval. Be sure to adapt these features if you want to change the location of the annotation or report the robust, bias-corrected versions of the estimate, p-value or confidence intervals. 
 
 ![](/images/rd_est_plot.png)
 
+The code to create this plot is:
+```
+#this function creates nice, final estimated plot with raw dots but estimated lines
+rd_est_plot = function(in_raw, in_est, x_raw, y_raw, dot_col, cut, krn, p, xlab, ylab, ymin, ymax, xbrk, ybrk){
+  #filter raw data by bandwidth from final model; calculate weights
+  raw_sub <- in_raw %>% mutate(rd_dot_color_raw={{dot_col}}) %>%  
+    filter({{x_raw}} >= (cut - round(in_est$bws[1],4)) & {{x_raw}} <= (cut + round(in_est$bws[3],4)) ) %>% arrange({{x_raw}}) %>%
+    mutate(id=row_number(), u_l = ({{x_raw}} - cut)/in_est$bws[1], u_r = ({{x_raw}} - cut)/in_est$bws[3]) 
+  raw_sub <- raw_sub %>% mutate(krntyp=krn) %>%
+    mutate(kernel_wght = case_when (krntyp=="uniform" & {{x_raw}} < 0 ~ (0.5*(abs(u_l)<=1))/in_est$bws[1], 
+                                    krntyp=="uniform" & {{x_raw}} >= 0 ~ (0.5*(abs(u_r)<=1))/in_est$bws[3],
+                                    krntyp=="triangular" & {{x_raw}} < cut ~ ((1-abs(u_l))*(abs(u_l)<=1))/in_est$bws[1],
+                                    krntyp=="triangular" & {{x_raw}} >= cut ~ ((1-abs(u_r))*(abs(u_r)<=1))/in_est$bws[3], TRUE ~ NA_real_) )
+  
+  #create vector of covariates on subset of data
+  z_plot = cbind(raw_sub$C1, raw_sub$C2, raw_sub$s1_dum, raw_sub$s2_dum, raw_sub$s3_dum)
+  
+  #create functions for floor and ceiling for decimals
+  floor_dec <- function(x, level=1) round(x - 5*10^(-level-1), level)
+  ceiling_dec <- function(x, level=1) round(x + 5*10^(-level-1), level)
+  x_lo <- floor(floor_dec(min(raw_sub[[deparse(substitute(x_raw))]], na.rm=T), 1)*2)/2
+  x_hi <- ceiling(ceiling_dec(max(raw_sub[[deparse(substitute(x_raw))]], na.rm=T), 1)*2)/2
+  x_lim <- max(abs(x_lo), abs(x_hi))
+  y_lo <- floor(floor_dec(min(raw_sub[[deparse(substitute(y_raw))]], na.rm=T), 1)*2)/2
+  y_hi <- ceiling(ceiling_dec(max(raw_sub[[deparse(substitute(y_raw))]], na.rm=T), 1)*2)/2
+  y_lim <- max(abs(y_lo), abs(y_hi))
+  
+  #create plot output file
+  est_plot <- rdplot(x = raw_sub[[deparse(substitute(x_raw))]], y = raw_sub[[deparse(substitute(y_raw))]], 
+                     c = cut, kernel=krn, p=p, binselect="esmv", weights=raw_sub$kernel_wght, covs=z_plot, 
+                     x.lim = c(-x_lim, x_lim), y.lim = c(-y_lim, y_lim), hide=TRUE, masspoints="off" )
+  
+  #limit raw data to necessarily fields
+  raw_sub <- raw_sub %>% dplyr::select(id, {{x_raw}}, {{y_raw}}, rd_dot_color_raw)
+  
+  #now use rdplot output to create lines for plotting
+  x_plot = est_plot$vars_poly[,"rdplot_x"]
+  y_hat  = est_plot$vars_poly[,"rdplot_y"]
+  x_plot_r=x_plot[x_plot >= cut]
+  x_plot_l=x_plot[x_plot < cut]
+  num_bin_l = est_plot$J[1]
+  num_bin_r = est_plot$J[2]
+  rd_tx = c(rep("TX",nrow(data.frame(x_plot_l))), rep("CT",nrow(data.frame(x_plot_r))))
+  rd_line_data <- data.frame(cbind(as.numeric(x_plot),as.numeric(y_hat),rd_tx))
+  rd_line_data$id <- seq.int(nrow(rd_line_data))
+  rdplot_mean_bin = est_plot$vars_bins[,"rdplot_mean_bin"]
+  rdplot_mean_bin <- data.frame(rdplot_mean_bin)
+  rdplot_mean_bin$id <- seq.int(nrow(rdplot_mean_bin))
+  rdplot_mean_y = est_plot$vars_bins[,"rdplot_mean_y"]
+  rdplot_mean_y <- data.frame(rdplot_mean_y)
+  rdplot_mean_y$id <- seq.int(nrow(rdplot_mean_y))
+  rd_dot_color  = data.frame(c(rep("TX",num_bin_l),rep("CT",num_bin_r)))
+  rd_dot_color$id <- seq.int(nrow(rd_dot_color))
+  colnames(rd_dot_color) <- c("rd_dot_color", "id")
+  rd_line_data <-  rd_line_data %>% 
+    left_join(rdplot_mean_bin, by = "id") %>% 
+    left_join(rdplot_mean_y, by = "id") %>% 
+    left_join(rd_dot_color, by = "id") %>% 
+    left_join(raw_sub, by = "id") 
+  
+  #filter out the section at the cut point so line doesn't appear on graph
+  rd_line_data <- rd_line_data %>% filter(V1 != 0)
+  
+  #create plot
+  temp_plot <- ggplot(rd_line_data, aes(color=rd_tx)) + 
+    geom_point(aes(x = {{x_raw}}, y = {{y_raw}}, color=rd_dot_color_raw, shape=rd_dot_color_raw), size=2, alpha = 0.5, show.legend = FALSE, na.rm = TRUE) +
+    geom_line(aes(x = as.numeric(V1), y = as.numeric(V2)), size=2, na.rm = TRUE) + 
+    labs(x = xlab, y = ylab, col="Treatment", shape="Treatment") + 
+    geom_vline(xintercept = cut, linetype = "solid", color="black", size=1) +
+    theme_classic() + 
+    scale_color_brewer(palette="Set1", direction=-1, na.translate = F) + scale_fill_brewer(palette="Set1", direction=-1) + #na.trans removes NA from legend
+    scale_x_continuous(limits=c(-x_lim, x_lim), breaks=xbrk) +
+    scale_y_continuous(limits=c(-y_lim, y_lim), breaks=ybrk) + 
+    annotate("text", x=-1, y=3.0, label = paste("Estimate = ", format(round(in_est$coef[1],3),nsmall=3), sep=""), hjust=0, size=3) + 
+    annotate("text", x=-1, y=2.8, label = paste("p-value = ", format(round(in_est$pv[1],3),nsmall=3), sep=""), hjust=0, size=3) + 
+    annotate("text", x=-1, y=2.6, label = paste("C.I. = [", format(round(in_est$ci[1],3),nsmall=3)," , ", format(round(in_est$ci[4],3),nsmall=3), "]", sep=""), hjust=0, size=3)
+  print(temp_plot)
+  return(rd_line_data)
+}
+rd_est_plot(in_raw=rd_dat, in_est=rd_est, x_raw=run_z_c, y_raw=Y, dot_col=tx_a,
+                      krn="triangular", cut= 0, p=1,
+                      xlab='Centered Z-Score', ylab='Y',
+                      xbrk=seq(-2, 2, by=0.5), 
+                      ybrk=seq(-4, 4, by=1) )
+```
 ### Other Software
 Here is a link to the simulated data file:
 [be_eq_data](/be_eq_data.xlsx)
