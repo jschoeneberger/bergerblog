@@ -1,7 +1,7 @@
 ---
 title: "Regression Discontinuity in R (Part 1): Introduction and Working With Multi-Site, Different Scale Assignment Variables"
 diagram: yes
-date: '2023-01-02'
+date: '2023-02-13'
 math: yes
 highlight: yes
 tags:
@@ -20,9 +20,9 @@ Regression Discontinuity (RD or RDDs; Cattaneo, Idrobo & Titiunik, 2018a; 2018b;
 This series of posts was motivated by my work on the <a href="https://new.every1graduates.org/projects/alfalab/#:~:text=WHAT%20IS%20ALFA%20LAB%3F,significantly%20below%20grade%20level%20standards">
 Accelerating Literacy for Adolescents (ALFA) Lab </a> evaluation funded by the U.S Department of Education's <a href="https://ies.ed.gov/">Institute for Education Sciences' </a> (R305A180154). In collaboration with researchers from <a href="https://education.jhu.edu/">Johns Hopkins School of Education </a>, I developed a number of R functions and scripts to analyze RD-based outcomes. My intent is to share what I learned with others seeking to use an RD design in their work.
 
-This first post will showcase how we handled a multi-site RD design, where each site had a unique assignment variable (as presented at the <a href="https://www.eval.org/">American Evaluation Association</a> 2022 conference). The post will also provide sample code for exploratory RD plotting, impact estimation, and post-estimation RD plots. This post is not intended to serve as an exploration into all things RD-estimation, but rather to share some developed code to facilitate the analysis and presentation of RD design data using <a href="https://rdpackages.github.io/rdrobust/">RDROBUST</a> and its affiliated packages. Additional posts will provide code for generating evidence aligned with <a href="https://ies.ed.gov/ncee/wwc/">What Works Clearinghouse (WWC)</a> <a href="https://ies.ed.gov/ncee/wwc/Docs/referenceresources/WWC-HandbookVer5.0AppIES-508.pdf">Standards 5.0</a> and will also explore mediation and moderation analyses within an RD design context. 
+This first post will showcase how we handled a multi-site RD design, where each site (and cohort in the actual study) had a unique assignment variable (as presented at the <a href="https://www.eval.org/">American Evaluation Association</a> 2022 conference). The post will also provide sample code for exploratory RD plotting, impact estimation, and post-estimation RD plots. This post is not intended to serve as an exploration into all things RD-estimation, but rather to share some developed code to facilitate the analysis and presentation of RD design data using <a href="https://rdpackages.github.io/rdrobust/">RDROBUST</a> and its affiliated packages. Additional posts will provide code for generating evidence aligned with <a href="https://ies.ed.gov/ncee/wwc/">What Works Clearinghouse (WWC)</a> <a href="https://ies.ed.gov/ncee/wwc/Docs/referenceresources/WWC-HandbookVer5.0AppIES-508.pdf">Standards 5.0</a> and will also explore mediation and moderation analyses within an RD design context. 
 
-For those looking to learn more about RD estimation and explore more of the features associated with the various RD packages, consult the references listed as the end of this post.
+For those looking to learn more about RD estimation and explore more of the features associated with the various RD packages, consult the references listed as the end of this post. The authors of <a href="https://rdpackages.github.io/rdrobust/">RDROBUST</a> were very responsive and accessible as I worked through applying their packages to my research situation.
 
 ## Preparing Multi-Site, Multi-Assignment Variable Data
 
@@ -311,7 +311,7 @@ With the current data, there are no masspoints found. The code is set up to gene
 ```
 ![](/images/rd_fake_masspt.png) 
 
-Given we do not have any masspoints, we can forego using that command option within RDROBUST during estimation. The following code will execute an analysis of our RD data. We specify _run_z_c_ as our assignment variable, _Y_ as our dependent variable, a cut-score of zero, the data-driven bandwidth selection procedure of MSETWO (so we allow for separate bandwidths on either side of the cut-score), a triangular kernel weight, a linear specification (p=1) using the covariates we assigned to object _z_. The "all=TRUE" option tells RDROBUST to report all the types of estimates and standard errors (see the RDROBUST documentation). See Cattaneo, Idrobo & Titiunik (2020) for recommendations on when to use separate bandwidths, kernel functions, and regression function specifications (i.e., p=1).
+Given we do not have any masspoints, we can forego using that command option within RDROBUST during estimation. The following code will execute an analysis of our RD data. We specify _run_z_c_ as our assignment variable, _Y_ as our dependent variable, a cut-score of zero, the data-driven bandwidth selection procedure MSETWO (so we allow for separate bandwidths on either side of the cut-score), a triangular kernel weight, a linear specification (p=1) using the covariates we assigned to object _z_. The "all=TRUE" option tells RDROBUST to report all the types of estimates and standard errors (see the RDROBUST documentation). See Cattaneo, Idrobo & Titiunik (2018a) and Cattaneo & Titiunik (2022) for recommendations on when to use separate bandwidths, kernel functions, and regression function specifications (i.e., p=1).
 
 ```
 rd_est = rdrobust(x=rd_dat$run_z_c, y=rd_dat$Y, c=0, bwselect="msetwo", kernel="triangular", p=1, covs=z,     masspoints="off", all=TRUE)
@@ -412,11 +412,105 @@ rd_est_plot(in_raw=rd_dat, in_est=rd_est, x_raw=run_z_c, y_raw=Y, dot_col=tx_a,
                       xbrk=seq(-2, 2, by=0.5), 
                       ybrk=seq(-4, 4, by=1) )
 ```
-### Other Software
-Here is a link to the simulated data file:
-[be_eq_data](/be_eq_data.xlsx)
+The code above for generating the nice plot is handy once you have settled on your final model specification (i.e., the kernel weight to use, the polynomial specification, etc.). As a form of sensitivity analysis, it can be helpful to examine estimates for an array of specifications. The following function again takes list of parameters for the bandwidth selection, kernel type, and polynomial specification, estimates the models using each combination, and creates a summary table of relevant output information. Included in the summary information is a standardize effect size (and corresponding confidence interval) based on the raw outcome standard deviation on each side of the cut-off. If you have a Fuzzy design, the first-stage estimates required during a WWC review are also captured (just adjust the selections made before printing).
+
+```
+#set up lists of parameters to estimate across    
+sel_lst <- c("mserd","msetwo","cerrd","certwo")
+krn_lst <- c("uniform","triangular")
+p_lst <- c(1,2)
+all_lst <- expand.grid(sel_lst, krn_lst, p_lst)
 
 
+bw_id <- with(all_lst, Map(function(bw_sel, krn, p, dat, x, y, cut, covars, fuz) {
+  ci_vec <- c(0.05, seq(from = -1000, to = 1000, by = .1)) #establish confidence interval of interest
+  #conduct bandwidth selection
+  if (fuz == "N") {
+    out_put <- rdrobust(x = dat[[x]], y = dat[[y]], c = cut, kernel = krn, p = p, bwselect = bw_sel, covs=covars, masspoints = "adjust", all=T)
+  }
+  else {
+    out_put <- rdrobust(x = dat[[x]], y = dat[[y]], c = cut, kernel = krn, p = p, bwselect = bw_sel, covs=covars, masspoints = "adjust", all=T, fuzzy=dat$tx_fuz)
+  }
+  #summary(out_put)
+  
+  #use output to isolate records inside robust bandwidth to calculate weights
+  es_sub <- dat %>% filter(dat[[x]] >= (cut - round(out_put$bws[2],4)) & dat[[x]] <= (cut + round(out_put$bws[4],4)) )
+  es_sub <- es_sub %>% mutate(u_l = (es_sub[[x]] - cut)/out_put$bws[2], u_r = (es_sub[[x]] - cut)/out_put$bws[4]) 
+  es_sub <- es_sub %>% mutate(krntyp=krn) %>%
+    mutate(kernel_wght = case_when (krntyp=="uniform" & es_sub[[x]] < 0 ~ (0.5*(abs(u_l)<=1))/out_put$bws[2], 
+                                    krntyp=="uniform" & es_sub[[x]] >= 0 ~ (0.5*(abs(u_r)<=1))/out_put$bws[4],
+                                    krntyp=="triangular" & es_sub[[x]] < cut ~ ((1-abs(u_l))*(abs(u_l)<=1))/out_put$bws[2],
+                                    krntyp=="triangular" & es_sub[[x]] >= cut ~ ((1-abs(u_r))*(abs(u_r)<=1))/out_put$bws[4],
+                                    TRUE ~ NA_real_) )
+  
+  #calculate effect size
+  if (fuz == "N") {
+    es_l <- dat %>% filter(dat[[x]] < cut)
+    es_r <- dat %>% filter(dat[[x]] >= cut)
+  }
+  if (fuz == "Y") {
+    es_l <- dat %>% filter(tx_fuz == 1)
+    es_r <- dat %>% filter(tx_fuz == 0)
+  }
+  l_n <- es_l %>% summarise(n())
+  r_n <- es_r %>% summarise(n()) 
+  l_sd <- es_l %>% summarise(sd(es_l[[y]]))
+  r_sd <- es_r %>% summarise(sd(es_r[[y]]))
+  omega <- 1 - (3/(4*(l_n + r_n - 2) - 1))
+  sd_p <- sqrt( ((l_n-1)*(l_sd^2) + (r_n-1)*(r_sd^2))/(l_n + r_n - 2) )
+  g <- as.numeric(round( omega*(round(unlist(out_put$coef)[1]*-1,4)) / sd_p, 5))
+  g_se <- as.numeric(omega*sqrt( (out_put$se[1]/sd_p)^2 + g^2/(2*(l_n + r_n)) ))
+  g_lcl <- round(g - g_se*(qnorm((1-.95)/2)*-1), 5)
+  g_ucl <- round(g + g_se*(qnorm((1-.95)/2)*-1), 5)
+  
+  #compile results - THESE ARE FLIPPED TO ACCOUNT FOR ABOVE-CUT AS TREATMENT (hence *-1 and flipping confidence intervals)
+  if (fuz == "N") {
+    out_sum <- as.data.frame(cbind(bw_type=bw_sel, kernel=krn, p=p,
+                                   n_l=out_put$N_h[2], n_r=out_put$N_h[1],
+                                   bw_l=round(out_put$bws[3],3), bw_r=round(out_put$bws[1],3), 
+                                   bw_b_l=round(out_put$bws[4],3), bw_b_r=round(out_put$bws[2],3),
+                                   conv_est=round(out_put$coef[1]*-1,3), conv_se=round(out_put$se[1],3), conv_p=format(round(out_put$pv[1],3),nsmall=3), conv_l=round(out_put$ci[4]*-1,3), conv_r=round(out_put$ci[1]*-1,3),
+                                   bc_est=round(out_put$coef[2]*-1,3), bc_se=round(out_put$se[2],3), bc_p=format(round(out_put$pv[2],3),nsmall=3), bc_l=round(out_put$ci[5]*-1,3),  bc_r=round(out_put$ci[2]*-1,3),
+                                   rob_n_l=out_put$N_b[2], rob_n_r=out_put$N_b[1], 
+                                   rob_est=round(out_put$coef[3]*-1,3), rob_se=round(out_put$se[3],3), rob_p=format(round(out_put$pv[3],3),nsmall=3), rob_l=round(out_put$ci[6]*-1,3), rob_r=round(out_put$ci[3]*-1,3),
+                                   es=round(g,3), es_ci_l=round(g_lcl,3), es_ci_r=round(g_ucl,3)))
+  }
+  else{
+    out_sum <- as.data.frame(cbind(bw_type=bw_sel, kernel=krn, p=p,
+                                   n_l=out_put$N_h[2], n_r=out_put$N_h[1],
+                                   bw_l=round(out_put$bws[3],3), bw_r=round(out_put$bws[1],3), 
+                                   bw_b_l=round(out_put$bws[4],3), bw_b_r=round(out_put$bws[2],3),
+                                   conv_est=round(out_put$coef[1]*-1,3), conv_se=round(out_put$se[1],3), conv_p=format(round(out_put$pv[1],3),nsmall=3), conv_l=round(out_put$ci[4]*-1,3), conv_r=round(out_put$ci[1]*-1,3),
+                                   bc_est=round(out_put$coef[2]*-1,3), bc_se=round(out_put$se[2],3), bc_p=format(round(out_put$pv[2],3),nsmall=4), bc_l=round(out_put$ci[5]*-1,3),  bc_r=round(out_put$ci[2]*-1,3),
+                                   rob_n_l=out_put$N_b[2], rob_n_r=out_put$N_b[1], 
+                                   rob_est=round(out_put$coef[3]*-1,3), rob_se=round(out_put$se[3],3), rob_p=format(round(out_put$pv[3],3),nsmall=3), rob_l=round(out_put$ci[6]*-1,3), rob_r=round(out_put$ci[3]*-1,3),
+                                   es=round(g,3), es_ci_l=round(g_lcl,3), es_ci_r=round(g_ucl,3),
+                                   fs_conv_est=round(out_put$tau_T[1]*-1,3), fs_conv_se=round(out_put$se_T[1],3), 
+                                   fs_conv_t=round(out_put$t_T[1]*-1,3), fs_conv_p=format(round(out_put$pv_T[1],3),nsmall=3), 
+                                   fs_conv_l=round(out_put$ci_T[4]*-1,3), fs_conv_r=round(out_put$ci_T[1]*-1,3),
+                                   fs_bc_est=round(out_put$tau_T[2]*-1,3), fs_bc_se=round(out_put$se_T[2],3), 
+                                   fs_bc_t=round(out_put$t_T[2]*-1,3), fs_bc_p=format(round(out_put$pv_T[2],3),nsmall=3), 
+                                   fs_bc_l=round(out_put$ci_T[5]*-1,3), fs_bc_r=round(out_put$ci_T[2]*-1,3),
+                                   fs_rob_est=round(out_put$tau_T[3]*-1,3), fs_rob_se=round(out_put$se_T[3],3),
+                                   fs_rob_t=round(out_put$t_T[3]*-1,3), fs_rob_p=format(round(out_put$pv_T[3],3),nsmall=3), 
+                                   fs_rob_l=round(out_put$ci_T[6]*-1,3), fs_rob_r=round(out_put$ci_T[3]*-1,3) ))
+  }
+  return(out_sum)
+}, Var1, Var2, Var3, dat=list(rd_dat), x=list("run_z_c"), y=list("Y"), cut=list(0), covars=list(z), fuz=list("N")))
+
+rd_bw_id <- lapply(bw_id, as.data.frame) %>% bind_rows(.id = "id") %>% 
+  mutate(bw_type = case_when(bw_type == 1 ~ "mserd", bw_type == 2 ~ "msetwo", bw_type == 3 ~ "cerrd", bw_type == 4 ~ "certwo"),
+         kernel = case_when(kernel == 1 ~ "uniform", kernel == 2 ~ "triangular"),
+         p = case_when(p == 1 ~ 1, p == 2 ~ 2))
+rd_bw_id_prt <- rd_bw_id %>% dplyr::select(kernel, bw_type, p, conv_est, conv_se, n_l, n_r, rob_p, conv_l, conv_r, bw_b_l, bw_b_r, es, es_ci_l, es_ci_r, 
+                                           rob_est, rob_se, rob_l, rob_r)
+rd_bw_id_prt
+```
+Note in the summary output selected, we present the conventional estimate accompanied by the robust p-value (as recommended by Cattaneo, Idrobo & Titiunik; 2018a). The bandwidths, effect sizes and robust estimates are also presented. The summary allows for a quick examination of models using either a linear or quadractice specification, different weighting kernels and different bandwidth selection types.
+
+![](/images/rd_bw_id.png) 
+
+Please feel free to reach out with questions about any of the code or content presented above. The next post will present the code I used to report the evidence necessary for a WWC Standards 5.0 review of our RD design evidence. 
 
 ## References
 Angrist, J., & Lavy, V. (1999). Using Maimonides’ rule to estimate the effect of class size on student achievement. _Quarterly Journal of Economics 114, May_, 535-575. DOI: <a href="https://doi.org/10.1162/003355399556061">10.1162/003355399556061</a>
@@ -426,6 +520,8 @@ Cattaneo, M. D., Idrobo, N., and Titiunik, R. (2018a). _A Practical Introduction
 Cattaneo, M. D., Idrobo, N., and Titiunik, R. (2018b). _A Practical Introduction to Regression Discontinuity Designs: Volume I, Cambridge Elements: Quantitative and Computational Methods for Social Science_. Cambridge University Press.
 
 Cattaneo, M. D., Titiunik, R., Vazquez-Bare, G., & Keele, L. (2016). Interpreting regression discontinuity designs with multiple cutoffs. _The Journal of Politics, 78(4)_, 1229–1248. DOI: <a href="https://www.journals.uchicago.edu/doi/abs/10.1086/686802">10.1086/686802</a>
+
+Cattaneo, M. D. & Titiunik, R. (2022). Regression discontinuity designs. _The Annual Review of Economics, 14_, 821-51. DOI: <a href="https://doi.org/10.1146/annurev-economics-051520-021409">10.1146/annurev-economics-051520-021409</a>
 
 Cook, T. D., W. R. Shadish, and V. C. Wong. 2008. Three Conditions Under Which Experiments and Observational Studies Produce Comparable Causal Estimates: New Findings from Within-Study Comparisons. _Journal of Policy Analysis and Management 27, 4_, 724-750. DOI: <a href="https://doi.org/10.1002/pam.20375">10.1002/pam.20375</a>
 
