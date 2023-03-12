@@ -473,23 +473,23 @@ bw_id <- with(all_lst, Map(function(bw_sel, krn, p, dat, x, y, cut, covars, fuz)
   #compile results - THESE ARE FLIPPED TO ACCOUNT FOR ABOVE-CUT AS TREATMENT (hence *-1 and flipping confidence intervals)
   if (fuz == "N") {
     out_sum <- as.data.frame(cbind(bw_type=bw_sel, kernel=krn, p=p,
-                                   n_l=out_put$N_h[2], n_r=out_put$N_h[1],
-                                   bw_l=round(out_put$bws[3],3), bw_r=round(out_put$bws[1],3), 
-                                   bw_b_l=round(out_put$bws[4],3), bw_b_r=round(out_put$bws[2],3),
+                                   n_l=out_put$N_h[1], n_r=out_put$N_h[2],
+                                   bw_l=round(out_put$bws[1],3), bw_r=round(out_put$bws[3],3), 
+                                   bw_b_l=round(out_put$bws[2],3), bw_b_r=round(out_put$bws[4],3),
                                    conv_est=round(out_put$coef[1]*-1,3), conv_se=round(out_put$se[1],3), conv_p=format(round(out_put$pv[1],3),nsmall=3), conv_l=round(out_put$ci[4]*-1,3), conv_r=round(out_put$ci[1]*-1,3),
                                    bc_est=round(out_put$coef[2]*-1,3), bc_se=round(out_put$se[2],3), bc_p=format(round(out_put$pv[2],3),nsmall=3), bc_l=round(out_put$ci[5]*-1,3),  bc_r=round(out_put$ci[2]*-1,3),
-                                   rob_n_l=out_put$N_b[2], rob_n_r=out_put$N_b[1], 
+                                   rob_n_l=out_put$N_b[1], rob_n_r=out_put$N_b[2], 
                                    rob_est=round(out_put$coef[3]*-1,3), rob_se=round(out_put$se[3],3), rob_p=format(round(out_put$pv[3],3),nsmall=3), rob_l=round(out_put$ci[6]*-1,3), rob_r=round(out_put$ci[3]*-1,3),
                                    es=round(g,3), es_ci_l=round(g_lcl,3), es_ci_r=round(g_ucl,3)))
   }
   else{
     out_sum <- as.data.frame(cbind(bw_type=bw_sel, kernel=krn, p=p,
-                                   n_l=out_put$N_h[2], n_r=out_put$N_h[1],
-                                   bw_l=round(out_put$bws[3],3), bw_r=round(out_put$bws[1],3), 
-                                   bw_b_l=round(out_put$bws[4],3), bw_b_r=round(out_put$bws[2],3),
+                                   n_l=out_put$N_h[1], n_r=out_put$N_h[2],
+                                   bw_l=round(out_put$bws[1],3), bw_r=round(out_put$bws[3],3), 
+                                   bw_b_l=round(out_put$bws[2],3), bw_b_r=round(out_put$bws[4],3),
                                    conv_est=round(out_put$coef[1]*-1,3), conv_se=round(out_put$se[1],3), conv_p=format(round(out_put$pv[1],3),nsmall=3), conv_l=round(out_put$ci[4]*-1,3), conv_r=round(out_put$ci[1]*-1,3),
                                    bc_est=round(out_put$coef[2]*-1,3), bc_se=round(out_put$se[2],3), bc_p=format(round(out_put$pv[2],3),nsmall=4), bc_l=round(out_put$ci[5]*-1,3),  bc_r=round(out_put$ci[2]*-1,3),
-                                   rob_n_l=out_put$N_b[2], rob_n_r=out_put$N_b[1], 
+                                   rob_n_l=out_put$N_b[1], rob_n_r=out_put$N_b[2], 
                                    rob_est=round(out_put$coef[3]*-1,3), rob_se=round(out_put$se[3],3), rob_p=format(round(out_put$pv[3],3),nsmall=3), rob_l=round(out_put$ci[6]*-1,3), rob_r=round(out_put$ci[3]*-1,3),
                                    es=round(g,3), es_ci_l=round(g_lcl,3), es_ci_r=round(g_ucl,3),
                                    fs_conv_est=round(out_put$tau_T[1]*-1,3), fs_conv_se=round(out_put$se_T[1],3), 
