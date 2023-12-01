@@ -18,7 +18,7 @@ interests:
 - Statistical Programming & Analysis
 - Applied Evaluation Methods
 organizations:
-- name: ICF
+- name: RTI
   url: https://www.rti.org/
 role: Senior Education Researcher
 social:
